@@ -1,0 +1,3 @@
+# WIP
+
+nbt -> "{" nbtKey " ":* nbtValue "}"

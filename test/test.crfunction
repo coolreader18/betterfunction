@@ -1,0 +1,19 @@
+namespace thenamespace {
+  folder foo {
+    function bar {
+      say heyo
+      say i'm in a folder
+    }
+  }
+  function thing {
+    say hi
+    function {
+      say this is neat
+      say another line
+    }
+    say hey there
+  }
+  tick function ticking {
+    say this runs every tick
+  }
+}

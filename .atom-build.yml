@@ -1,0 +1,1 @@
+cmd: nearleyc grammar/index.ne -o grammar.js
