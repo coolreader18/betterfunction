@@ -2,7 +2,7 @@ namespace thenamespace {
   folder foo {
     function bar {
       say heyo
-      say i'm in a folder
+      say im in a folder
     }
   }
   function thing {
@@ -15,5 +15,7 @@ namespace thenamespace {
   }
   tick function ticking {
     say this runs every tick
+    weather clear 1000
+    execute sdafsaduiofh udshf sha
   }
 }

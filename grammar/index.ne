@@ -36,7 +36,10 @@ variableName -> [\w]:+ {% concatid %}
 functionBlock -> block[command] {% data => data[0].map(cur=>cur[0]) %}
 between -> (_ nl):* {% nuller %}
 string -> dqstring {% id %} | sqstring {% id %}
-nl -> "\r":? "\n"
-nnl -> [^\r\n]
+nl -> "\r":? "\n" # new line
+nnl -> [^\r\n] # not new line
+nnl+ -> nnl:+ {% concatid %} # not new line, once or more
 _ -> [\t ]:* {% id %}
 __ -> [\t ]:+ {% id %}
+w+ -> [\w]:+ {% concatid %}
+d+ -> [\d]:+ {% concatid %}
