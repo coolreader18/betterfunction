@@ -1,4 +1,4 @@
-//#!/usr/bin/env node
+#!/usr/bin/env node
 if (process.argv[2]) {
   const nearley = require("nearley");
   const grammar = require("./grammar.js");

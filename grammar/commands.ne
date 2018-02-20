@@ -14,22 +14,11 @@
 selector -> "@" selectorBases ("[" selectorSpec:+ "]" {% concat %}):? {% concat %} | [\w]
 selectorSpec -> w+ "=" [^\]]:+ ("," " ":*):? {% data => concat(data[0]) + data[1] + concat(data[2]) %}
 selectorBases -> ("a" | "e" | "p" | "r" | "s") {% id %}
-dataid -> (w+ ":" | null) [\w]
+dataid -> (w+ ":" | null) w+
 tag -> "#" dataid
 tagorid -> (tag | dataid) {% mid(2) %}
 pos -> 1pos " " 1pos " " 1pos
-1pos -> ("^" | "~") int {% (data, _, rej) => {
-    if (!data[0]) {
-      if (!data[1]) {
-        return reject;
-      } else {
-        return data[1]
-      }
-    } else {
-      return concat(data)
-    }
-  }
-%}
+1pos -> ("^" | "~" | null) (d+ | null)
 path -> [\w"'\.[\]]:*
 gmode -> ("survival" | "creative" | "adventure" | "spectator")
 difclty -> ("easy" | "normal" | "hard" | "peaceful")
@@ -84,7 +73,7 @@ spawnpoint -> "spawnpoint " selector " " pos
 spreadplayers -> "spreadplayers " nnl+
 stop -> "stop" _
 stopsound -> "stopsound " nnl+
-summon -> "summon " dataid (" " pos nbt:?):?
+summon -> "summon " dataid (" " pos (" " nbt):?):?
 tag -> "tag " selector " " ("list" | ("add" | "remove") w+)
 team -> "team " nnl+
 teleport -> "teleport " (selector (selector | pos):? | pos)

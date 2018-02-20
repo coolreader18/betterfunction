@@ -160,7 +160,7 @@ var grammar = {
     {"name": "selectorBases", "symbols": ["selectorBases$subexpression$1"], "postprocess": id},
     {"name": "dataid$subexpression$1", "symbols": ["w+", {"literal":":"}]},
     {"name": "dataid$subexpression$1", "symbols": []},
-    {"name": "dataid", "symbols": ["dataid$subexpression$1", /[\w]/]},
+    {"name": "dataid", "symbols": ["dataid$subexpression$1", "w+"]},
     {"name": "tag", "symbols": [{"literal":"#"}, "dataid"]},
     {"name": "tagorid$subexpression$1", "symbols": ["tag"]},
     {"name": "tagorid$subexpression$1", "symbols": ["dataid"]},
@@ -168,18 +168,10 @@ var grammar = {
     {"name": "pos", "symbols": ["1pos", {"literal":" "}, "1pos", {"literal":" "}, "1pos"]},
     {"name": "1pos$subexpression$1", "symbols": [{"literal":"^"}]},
     {"name": "1pos$subexpression$1", "symbols": [{"literal":"~"}]},
-    {"name": "1pos", "symbols": ["1pos$subexpression$1", "int"], "postprocess":  (data, _, rej) => {
-          if (!data[0]) {
-            if (!data[1]) {
-              return reject;
-            } else {
-              return data[1]
-            }
-          } else {
-            return concat(data)
-          }
-        }
-        },
+    {"name": "1pos$subexpression$1", "symbols": []},
+    {"name": "1pos$subexpression$2", "symbols": ["d+"]},
+    {"name": "1pos$subexpression$2", "symbols": []},
+    {"name": "1pos", "symbols": ["1pos$subexpression$1", "1pos$subexpression$2"]},
     {"name": "path$ebnf$1", "symbols": []},
     {"name": "path$ebnf$1", "symbols": ["path$ebnf$1", /[\w"'\.[\]]/], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
     {"name": "path", "symbols": ["path$ebnf$1"]},
@@ -331,7 +323,8 @@ var grammar = {
     {"name": "stopsound$string$1", "symbols": [{"literal":"s"}, {"literal":"t"}, {"literal":"o"}, {"literal":"p"}, {"literal":"s"}, {"literal":"o"}, {"literal":"u"}, {"literal":"n"}, {"literal":"d"}, {"literal":" "}], "postprocess": function joiner(d) {return d.join('');}},
     {"name": "stopsound", "symbols": ["stopsound$string$1", "nnl+"]},
     {"name": "summon$string$1", "symbols": [{"literal":"s"}, {"literal":"u"}, {"literal":"m"}, {"literal":"m"}, {"literal":"o"}, {"literal":"n"}, {"literal":" "}], "postprocess": function joiner(d) {return d.join('');}},
-    {"name": "summon$ebnf$1$subexpression$1$ebnf$1", "symbols": ["nbt"], "postprocess": id},
+    {"name": "summon$ebnf$1$subexpression$1$ebnf$1$subexpression$1", "symbols": [{"literal":" "}, "nbt"]},
+    {"name": "summon$ebnf$1$subexpression$1$ebnf$1", "symbols": ["summon$ebnf$1$subexpression$1$ebnf$1$subexpression$1"], "postprocess": id},
     {"name": "summon$ebnf$1$subexpression$1$ebnf$1", "symbols": [], "postprocess": function(d) {return null;}},
     {"name": "summon$ebnf$1$subexpression$1", "symbols": [{"literal":" "}, "pos", "summon$ebnf$1$subexpression$1$ebnf$1"]},
     {"name": "summon$ebnf$1", "symbols": ["summon$ebnf$1$subexpression$1"], "postprocess": id},

@@ -10,6 +10,7 @@ namespace thenamespace {
     function {
       say this is neat
       say another line
+      summon minecraft:creeper ~ ~ ~
     }
     say hey there
   }
