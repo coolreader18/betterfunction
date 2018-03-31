@@ -5,34 +5,41 @@ if (process.argv[2]) {
   const fs = require("fs-extra");
   const parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammar));
   const path = require("path");
-  var wd = path.dirname(path.join(process.cwd(), process.argv[2]));
+  let wd = path.dirname(path.join(process.cwd(), process.argv[2]));
   String.prototype.trimLeft = function trimLeft() {
     return this.replace(/^\s*/, "");
   };
-  let ext = ".crfunction"; // still not sure
+  const ext = ".crfunction"; // still not sure
 
-  var tick = [];
-  var curnsp;
+  const tick = [];
+  const generated = {};
+  let curnsp;
   load(path.join(wd, path.basename(process.argv[2])));
 
   if (tick.length) {
-    var mcfuncpath = path.join(wd, "data/minecraft/tags/functions");
+    let mcfuncpath = path.join(wd, "data/minecraft/tags/functions");
     fs.mkdirpSync(mcfuncpath);
     fs.writeJSONSync(path.join(mcfuncpath, "tick.json"), { values: tick });
+  }
+  for (let nsp in generated) {
+    folder(
+      { name: "crfngen", data: generated[nsp] },
+      path.join("data", nsp, "functions")
+    );
   }
 
   console.log("\x1b[32m", "Done!");
 
   function load(crfile) {
-    var crfn = fs.readFileSync(crfile, "utf8");
+    let crfn = fs.readFileSync(crfile, "utf8");
     parser.feed(crfn);
-    var parsed = parser.results[0][0];
+    let parsed = parser.results[0][0];
     parsed.forEach(statement => {
       if (statement) {
         ({
           namespace(data) {
             curnsp = data.name;
-            var relpath = path.join("data", curnsp, "functions");
+            let relpath = path.join("data", curnsp, "functions");
             fs.emptyDirSync(path.join(wd, relpath));
             folder(Object.assign(data, { name: "" }), relpath);
           },
@@ -48,19 +55,31 @@ if (process.argv[2]) {
     });
   }
   function folder(data, flpath) {
-    var flpath = path.join(flpath, data.name);
+    flpath = path.join(flpath, data.name);
     fs.mkdirpSync(flpath);
-    data.data.forEach(statement => {
+    data.data.forEach(statement =>
       ({
-        ["function"](func) {
-          var fnfile = func.commands.join("\n");
-          var reg = /%crfngen(\d+)%/g;
-          for (var res = reg.exec(fnfile); res; res = reg.exec(fnfile)) {
-            fnfile = fnfile.replace(
-              new RegExp(res[0]),
-              `${curnsp}:crfngen/func${res[1]}`
-            );
-          }
+        function: func => {
+          const handleCommand = com =>
+            ({
+              function: () => {
+                generated[curnsp] = generated[curnsp]
+                  ? generated[curnsp].concat(com)
+                  : [com];
+                com.name = `func${generated[curnsp].length}`;
+                return `function ${curnsp}:crfngen/${com.name}`;
+              },
+              execute: () =>
+                com.text.replace(
+                  /%EXECUTECOMMAND%/,
+                  handleCommand(com.command)
+                ),
+              undefined: () => com.text
+            }[com.type]());
+          let fnfile = func.commands.reduce(
+            (str, cur) => str + handleCommand(cur) + "\n",
+            ""
+          );
           if (func.tick) {
             let nsppath = flpath
               .split("/")
@@ -73,11 +92,9 @@ if (process.argv[2]) {
             fnfile
           );
         },
-        folder(data) {
-          folder(data, flpath);
-        }
-      }[statement.type](statement));
-    });
+        folder: data => folder(data, flpath)
+      }[statement.type](statement))
+    );
   }
 } else {
   console.error("\x1b[31m", new Error("Must supply an argument").toString());

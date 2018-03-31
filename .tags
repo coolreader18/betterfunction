@@ -1,0 +1,32 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+String	.\index.js	/^  String.prototype.trimLeft = function trimLeft() {$/;"	c
+String.trimLeft	.\index.js	/^  String.prototype.trimLeft = function trimLeft() {$/;"	m
+bin	.\package.json	/^  "bin": {$/;"	f
+build	.\package.json	/^    "build": "nearleyc grammar\/index.ne -o grammar.js",$/;"	f
+concat	.\grammar.js	/^	function concat(data) {$/;"	f
+concatid	.\grammar.js	/^	function concatid(data) {$/;"	f
+crfn	.\package.json	/^    "crfn": ".\/index.js"$/;"	f
+curnsp	.\index.js	/^  var curnsp;$/;"	v
+dependencies	.\package.json	/^  "dependencies": {$/;"	f
+flatten	.\grammar.js	/^  function flatten(arr) {$/;"	f
+folder	.\index.js	/^  function folder(data, flpath) {$/;"	f
+fs-extra	.\package.json	/^    "fs-extra": "^5.0.0",$/;"	f
+grammar.Lexer	.\grammar.js	/^    Lexer: undefined,$/;"	p
+grammar.ParserRules	.\grammar.js	/^    ParserRules: [$/;"	p
+license	.\package.json	/^  "license": "MIT",$/;"	f
+load	.\index.js	/^  function load(crfile) {$/;"	f
+main	.\package.json	/^  "main": "index.js",$/;"	f
+name	.\package.json	/^  "name": "creeperfunction",$/;"	f
+nearley	.\package.json	/^    "nearley": "^2.11.0"$/;"	f
+nuller	.\grammar.js	/^	function nuller() {$/;"	f
+package	.\package.json	/^    "package": "nexe",$/;"	f
+scripts	.\package.json	/^  "scripts": {$/;"	f
+test	.\package.json	/^    "test": "cd test && node .. test.crfunction"$/;"	f
+tick	.\index.js	/^  var tick = [];$/;"	v
+version	.\package.json	/^  "version": "0.0.1",$/;"	f
+wd	.\index.js	/^  var wd = path.dirname(path.join(process.cwd(), process.argv[2]));$/;"	v

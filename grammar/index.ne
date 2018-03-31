@@ -8,7 +8,6 @@
 	function nuller() {
 		return null;
 	}
-	var generated = []
 %}
 @builtin "string.ne"
 @include "commands.ne"
@@ -18,22 +17,32 @@ full -> statementCrfn:* {% id %}
 
 statementCrfn -> statement[(nspStatement | includeStatement)] {% id %}   # Base level statement
 
-includeStatement -> "include" __ string {% data => ({type: "include", include: data[2]}) %}
-nspStatement -> "namespace" __ variableName _ block[statementFolderornsp] {%
-	data => {
-		var ret = {type: "namespace", name: data[2], data: data[4].map(cur=>cur[0][0]).concat([{type: "folder", name: "crfngen", data: generated}])};
-		generated = [];
-		return ret;
-	}
+includeStatement -> "include" __ string {%
+	data => ({
+		type: "include",
+		include: data[2]
+	})
+%}
+nspStatement -> "namespace" __ w+ _ block[statementFolderornsp] {%
+	data => ({
+      type: "namespace",
+      name: data[2],
+      data: data[4].map(cur => cur[0][0])
+  })
 %}
 
 statementFolderornsp -> statement[(functionStatement | folderStatement)] {% id %}
-folderStatement -> "folder" __ variableName _ block[statementFolderornsp] {% data => ({type: "folder", name: data[2], data: data[4][0].map(cur=>cur[0])}) %}
-functionStatement ->  "tick ":? "function" __ variableName _ functionBlock {%
+folderStatement -> "folder" __ w+ _ block[statementFolderornsp] {%
+	data => ({
+		type: "folder",
+		name: data[2],
+		data: data[4][0].map(id)
+	}) 
+%}
+functionStatement ->  ("tick" __):? "function" __ w+ _ functionBlock {%
 	data => ({type: "function", name: data[3], commands: data[5], tick: !!data[0]})
 %}
-variableName -> [\w]:+ {% concatid %}
-functionBlock -> block[command] {% data => data[0].map(cur=>cur[0]) %}
+functionBlock -> block[command] {% data => data[0].map(id) %}
 between -> (_ nl):* {% nuller %}
 string -> dqstring {% id %} | sqstring {% id %}
 nl -> "\r":? "\n" # new line

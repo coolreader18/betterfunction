@@ -1,32 +1,32 @@
 @{%
-  function mid(num) {
-    return data => eval(`data${"[0]".repeat(num)}`);
-  }
   function flatten(arr) {
-    return arr.reduce(function (flat, toFlatten) {
-      return flat.concat(Array.isArray(toFlatten) ? flatten(toFlatten) : toFlatten);
-    }, []);
+    return Array.isArray(arr) ? arr.reduce((flat, toFlatten) =>
+      flat.concat(Array.isArray(toFlatten) ? flatten(toFlatten) : toFlatten),
+    []) : [arr];
   }
 %}
-@builtin "number.ne"
+@include "nbt.ne"
 
-
-selector -> "@" selectorBases ("[" selectorSpec:+ "]" {% concat %}):? {% concat %} | [\w]
-selectorSpec -> w+ "=" [^\]]:+ ("," " ":*):? {% data => concat(data[0]) + data[1] + concat(data[2]) %}
+selector -> "@" selectorBases ("[" selectorSpec:+ "]"):? | w+
+selectorSpec -> w+ "=" (nbt | range | "!":? w+) ("," " ":*):?
 selectorBases -> ("a" | "e" | "p" | "r" | "s") {% id %}
 dataid -> (w+ ":" | null) w+
 tag -> "#" dataid
-tagorid -> (tag | dataid) {% mid(2) %}
+tagorid -> tag | dataid
 pos -> 1pos " " 1pos " " 1pos
 1pos -> ("^" | "~" | null) (d+ | null)
 path -> [\w"'\.[\]]:*
-gmode -> ("survival" | "creative" | "adventure" | "spectator")
-difclty -> ("easy" | "normal" | "hard" | "peaceful")
-nbt -> "{" nnl+ "}"
+gmode -> "survival" | "creative" | "adventure" | "spectator"
+difclty -> "easy" | "normal" | "hard" | "peaceful"
+dimension -> "overworld" | "the_end" | "the_nether"
+anchor -> "feet" | "eyes"
+range -> d+:? "..":? d+:?
+datatype -> "byte" | "double" | "float" | "int" | "long" | "short"
+path -> [\[\]"\w]:+
 
-advancement -> "advancement " (("grant" | "revoke") {% mid(2) %}) " " selector " " ("everything" | ("from" | "only" | "through" | "until") " " dataid)
+advancement -> "advancement " ("grant" | "revoke") " " selector " " ("everything" | ("from" | "only" | "through" | "until") " " dataid)
 blockdata -> "blockdata " nnl+
-clear -> "clear " selector (" " tagorid (" " [0-9]:+):?):?
+clear -> "clear " selector (" " tagorid (" " d+):?):?
 clone -> "clone " pos " " pos " " pos
 data -> "data " nnl+
 datapack -> "datapack " nnl+
@@ -35,32 +35,58 @@ defaultgamemode -> "defaultgamemode " gmode
 difficulty -> "difficulty " difclty
 effect -> "effect " nnl+
 enchant -> "enchant " selector " " tagorid " " d+
-execute -> "execute " nnl+
+execute -> "execute" (" " (
+  ("at" | "as") " " selector
+  | "positioned " (pos | "at " selector)
+  | "facing " pos
+  | "align " [x-z]:+
+  | "facing " (pos | "entity " selector " " anchor)
+  | "rotated " (d+ " " d+ | "as " selector)
+  | "in " dimension
+  | "anchored " anchor
+  | ("if" | "unless") " " (
+    "block " pos " " tagorid
+    | "blocks " pos " " pos " " pos " " ("all" | "masked")
+    | "entity " selector
+    | "score " selector " " w+ " " (("<" | "<=" | "=" | ">=" | ">") " " selector " " w+ | "matches " range)
+    )
+  | "store " ("result" | "success") " " (
+    "block " pos " " path " " datatype
+    | "bossbar " dataid " " ("max" | "value")
+    | "entity " selector " " path " " datatype
+    | "score " selector " " w+
+    )
+  )):*
+  (" " ("run" | "runat" {% () => "run execute at @s run" %}) " " command):? {%
+    data => {
+      data = JSON.parse(JSON.stringify(data))
+      let command = flatten(data[2] ? data[2][3] : undefined)[0];
+      if (data[2]) data[2][3] = "%EXECUTECOMMAND%";
+      return {
+        type: "execute",
+        command,
+        text: flatten(data).join("")
+      }
+    }
+  %}
+experience -> "experience " (
+  ("add " selector " " int | "set " selector " " d+) " " ("levels" | "points")
+  | "query " selector
+  )
 fill -> "fill " nnl+
 function -> "function " (functionBlock {%
-  function (data) {
-    var duplicate, name;
-    generated.forEach(cur => {
-      if (cur.type == "function" && cur.commands.join("\n") == data[0].join("\n")) {
-        duplicate = `%${/func(\d+)/.exec(cur.name)[0]}%`;
-      }
-    })
-    if (!duplicate) {
-      var num = generated.length
-      name = `%crfngen${num}%`;
-      generated.push({type:"function", name: `func${num}`, commands: data[0]})
-    } else {
-      name = duplicate;
-    }
-    return name;
-  }
-%} | tagorid)
+  data => ({
+    type: "function",
+    commands: data[0]
+  })
+%} | tagorid) {% data => data[1].type == "function" ? data[1] : data %}
 gamemode -> "gamemode " gmode
 gamerule -> "gamerule " nnl+
 give -> "give " selector " " tagorid [\d]:*
 help -> "help " command
 kill -> "kill " selector
 locate -> "locate " nnl+
+msg -> "msg " selector " " nnl+
 particle -> "particle " nnl+
 recipe -> "recipe " ("give" | "take") " " selector " " (tagorid | "*")
 reload -> "reload" _
@@ -87,4 +113,14 @@ weather -> "weather " ("clear" | "rain" | "thunder") (" " d+ ):?
 worldborder -> "worldborder " nnl+
 xp -> experience
 
-command -> (advancement|blockdata|bossbar|clear|clone|data|defaultgamemode|difficulty|effect|execute|experience|fill|function|gamemode|gamerule|give|kill|locate|msg|particle|playsound|recipe|reload|replaceitem|say|scoreboard|tag|team|seed|setblock|setworldspawn|spreadplayers|stopsound|summon|teleport|tellraw|tell|time|title|tp|trigger|w|weather|worldborder|xp) {% data => flatten(data[0][0]).filter(cur=>cur!==null).join("") %}
+command -> (advancement|blockdata|bossbar|clear|clone|data|defaultgamemode|difficulty|effect|execute|experience|fill|function|gamemode|gamerule|give|kill|locate|msg|particle|playsound|recipe|reload|replaceitem|say|scoreboard|tag|team|seed|setblock|setworldspawn|spreadplayers|stopsound|summon|teleport|tellraw|tell|time|title|tp|trigger|weather|worldborder|xp) {%
+  data => {
+    data = data[0][0]
+    let cond = data.type == "execute";
+    if (Array.isArray(data)) {
+      data = { text: data };
+    }
+    data.text = flatten(data.text).join("");
+    return data;
+  }
+%}

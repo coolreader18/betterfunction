@@ -1,22 +1,21 @@
-namespace thenamespace {
+namespace minibomb {
+  tick function minibomb {
+    execute as @e[type=item,nbt={Item:{tag:{Tags:["minibomb"]}},OnGround:1b},tag=!noExplodeMB] runat function {
+      summon creeper ~ ~1 ~ {ignited:1,ExplosionRadius:1.5,Fuse:1}
+      kill @s
+    }
+    execute as @e[type=item,nbt={Item:{id:"minecraft:gunpowder",Count: 1b}}] runat execute as @e[type=item,nbt={Item:{id:"redstone",Count: 1b}},distance=..1,limit=1,sort=nearest] runat function {
+      summon item ~ ~ ~ {Item:{id:"tnt",Count:1b,tag:{Tags:["minibomb"],HideFlags:1,display:{Name:"MiniBomb",Lore:["Throw to Activate"]},ench:[{id:34,lvl:1}]}},Tags:["noExplodeMB"]}
+      kill @e[type=item,nbt={Item:{id:"minecraft:gunpowder",Count:1b}},distance=..1,limit=1,sort=nearest]
+      kill @s
+    }
+    function {
+      say inline function
+    }
+  }
   folder foo {
     function bar {
-      say heyo
-      say im in a folder
+      say baz
     }
-  }
-  function thing {
-    say hi
-    function {
-      say this is neat
-      say another line
-      summon minecraft:creeper ~ ~ ~
-    }
-    say hey there
-  }
-  tick function ticking {
-    say this runs every tick
-    weather clear 1000
-    execute sdafsaduiofh udshf sha
   }
 }
