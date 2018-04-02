@@ -85,12 +85,10 @@ give -> "give " selector " " tagorid [\d]:*
 help -> "help " command
 if -> "if " "not ":? condition " " functionBlock {% 
   data => ({
-    type: "execute",
-    command: {
-      type: "function",
-      commands: data[4]
-    },
-    text: `execute ${data[1] ? "unless" : "if"} ${data[2]} run %EXECUTECOMMAND%`
+    type: "if",
+    condition: data[2]
+    commands: data[4],
+    not: !!data[1]
   })
 %}
 kill -> "kill " selector

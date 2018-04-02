@@ -74,6 +74,13 @@ if (process.argv[2]) {
                   /%EXECUTECOMMAND%/,
                   handleCommand(com.command)
                 ),
+              if: () =>
+                `execute ${com.not ? "unless" : "if"} ${
+                  com.condition
+                } run ${handleCommand({
+                  type: "function",
+                  commands: com.commands
+                })}`,
               undefined: () => com.text
             }[com.type]());
           let fnfile = func.commands.reduce(
