@@ -490,6 +490,7 @@ var grammar = {
     {"name": "command$subexpression$1", "symbols": ["gamemode"]},
     {"name": "command$subexpression$1", "symbols": ["gamerule"]},
     {"name": "command$subexpression$1", "symbols": ["give"]},
+    {"name": "command$subexpression$1", "symbols": ["if"]},
     {"name": "command$subexpression$1", "symbols": ["kill"]},
     {"name": "command$subexpression$1", "symbols": ["locate"]},
     {"name": "command$subexpression$1", "symbols": ["msg"]},
