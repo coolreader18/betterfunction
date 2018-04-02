@@ -1,13 +1,13 @@
 @{%
-	function concat(data) {
-		return data.join("")
-	}
-	function concatid(data) {
-		return concat(id(data))
-	}
-	function nuller() {
-		return null;
-	}
+  function concat(data) {
+    return data.join("")
+  }
+  function concatid(data) {
+    return concat(id(data))
+  }
+  function nuller() {
+    return null;
+  }
 %}
 @builtin "string.ne"
 @include "commands.ne"
