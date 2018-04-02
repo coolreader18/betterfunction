@@ -12,6 +12,9 @@ namespace minibomb {
     function {
       say inline function
     }
+    if not entity @e[tag=g] {
+      say hey there
+    }
   }
   folder foo {
     function bar {

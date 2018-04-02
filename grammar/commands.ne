@@ -69,10 +69,9 @@ execute -> "execute" (" " (
       }
     }
   %}
-experience -> "experience " (
-  ("add " selector " " int | "set " selector " " d+) " " ("levels" | "points")
+experience -> "experience " expPart
+expPart -> ("add " selector " " int | "set " selector " " d+) " " ("levels" | "points")
   | "query " selector
-  )
 fill -> "fill " nnl+
 function -> "function " (functionBlock {%
   data => ({
@@ -121,7 +120,7 @@ tp -> teleport
 trigger -> "trigger " w+ " " ("add" | "set") d+
 weather -> "weather " ("clear" | "rain" | "thunder") (" " d+ ):?
 worldborder -> "worldborder " nnl+
-xp -> experience
+xp -> "xp " expPart
 
 command -> (advancement|blockdata|bossbar|clear|clone|data|defaultgamemode|difficulty|effect|execute|experience|fill|function|gamemode|gamerule|give|kill|locate|msg|particle|playsound|recipe|reload|replaceitem|say|scoreboard|tag|team|seed|setblock|setworldspawn|spreadplayers|stopsound|summon|teleport|tellraw|tell|time|title|tp|trigger|weather|worldborder|xp) {%
   data => {
