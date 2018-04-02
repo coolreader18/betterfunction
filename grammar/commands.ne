@@ -23,6 +23,11 @@ anchor -> "feet" | "eyes"
 range -> d+:? "..":? d+:?
 datatype -> "byte" | "double" | "float" | "int" | "long" | "short"
 path -> [\[\]"\w]:+
+condition -> "block " pos " " tagorid
+  | "blocks " pos " " pos " " pos " " ("all" | "masked")
+  | "entity " selector
+  | "score " selector " " w+ " " (("<" | "<=" | "=" | "=>" | ">") " " selector " " w+ | "matches " range)
+
 
 advancement -> "advancement " ("grant" | "revoke") " " selector " " ("everything" | ("from" | "only" | "through" | "until") " " dataid)
 blockdata -> "blockdata " nnl+
@@ -44,12 +49,7 @@ execute -> "execute" (" " (
   | "rotated " (d+ " " d+ | "as " selector)
   | "in " dimension
   | "anchored " anchor
-  | ("if" | "unless") " " (
-    "block " pos " " tagorid
-    | "blocks " pos " " pos " " pos " " ("all" | "masked")
-    | "entity " selector
-    | "score " selector " " w+ " " (("<" | "<=" | "=" | ">=" | ">") " " selector " " w+ | "matches " range)
-    )
+  | ("if" | "unless") " " condition
   | "store " ("result" | "success") " " (
     "block " pos " " path " " datatype
     | "bossbar " dataid " " ("max" | "value")
@@ -84,6 +84,16 @@ gamemode -> "gamemode " gmode
 gamerule -> "gamerule " nnl+
 give -> "give " selector " " tagorid [\d]:*
 help -> "help " command
+if -> "if " "not ":? condition " " functionBlock {% 
+  data => ({
+    type: "execute",
+    command: {
+      type: "function",
+      commands: data[4]
+    },
+    text: `execute ${data[1] ? "unless" : "if"} ${data[2]} run %EXECUTECOMMAND%`
+  })
+%}
 kill -> "kill " selector
 locate -> "locate " nnl+
 msg -> "msg " selector " " nnl+
