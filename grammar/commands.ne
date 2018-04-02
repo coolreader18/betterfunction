@@ -86,7 +86,7 @@ help -> "help " command
 if -> "if " "not ":? condition " " functionBlock {% 
   data => ({
     type: "if",
-    condition: data[2]
+    condition: flatten(data[2]).join(""),
     commands: data[4],
     not: !!data[1]
   })
@@ -120,7 +120,7 @@ weather -> "weather " ("clear" | "rain" | "thunder") (" " d+ ):?
 worldborder -> "worldborder " nnl+
 xp -> "xp " expPart
 
-command -> (advancement|blockdata|bossbar|clear|clone|data|defaultgamemode|difficulty|effect|execute|experience|fill|function|gamemode|gamerule|give|kill|locate|msg|particle|playsound|recipe|reload|replaceitem|say|scoreboard|tag|team|seed|setblock|setworldspawn|spreadplayers|stopsound|summon|teleport|tellraw|tell|time|title|tp|trigger|weather|worldborder|xp) {%
+command -> (advancement|blockdata|bossbar|clear|clone|data|defaultgamemode|difficulty|effect|execute|experience|fill|function|gamemode|gamerule|give|if|kill|locate|msg|particle|playsound|recipe|reload|replaceitem|say|scoreboard|tag|team|seed|setblock|setworldspawn|spreadplayers|stopsound|summon|teleport|tellraw|tell|time|title|tp|trigger|weather|worldborder|xp) {%
   data => {
     data = data[0][0]
     let cond = data.type == "execute";
