@@ -28,15 +28,15 @@ require("yargs").usage(
     if (fs.lstatSync(file).isDirectory()) {
       let entry;
       try {
-        entry = fs.readJSONSync(path.join(file, "pack.mcmeta")).entry;
+        entry = fs.readJSONSync(path.join(file, "pack.mcmeta")).entry || `index${ext}`;
       } catch (err) {
         if (err.code != "ENOENT") throw err;
         throw new Error(
           "specified file is a directory and the pack.mcmeta file is missing"
         );
       }
-      if (!entry)
-        throw new Error("main field in pack.mcmeta is empty or missing");
+      if (!fs.existsSync(path.join(file, entry)))
+        throw new Error(`main field in pack.mcmeta is empty or missing and there is no index${ext} file`);
       wd = file;
       toLoad = path.resolve(wd, entry);
     } else {
