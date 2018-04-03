@@ -13,8 +13,10 @@ selectorBases -> ("a" | "e" | "p" | "r" | "s") {% id %}
 dataid -> (w+ ":" | null) w+
 tag -> "#" dataid
 tagorid -> tag | dataid
-pos -> 1pos " " 1pos " " 1pos
-1pos -> ("^" | "~" | null) (d+ | null)
+posMacro[pre] -> $pre int:? " " $pre int:? " " $pre int:?
+pos -> int " " int " " int
+  | posMacro["~"]
+  | posMacro["^"]
 path -> [\w"'\.[\]]:*
 gmode -> "survival" | "creative" | "adventure" | "spectator"
 difclty -> "easy" | "normal" | "hard" | "peaceful"
