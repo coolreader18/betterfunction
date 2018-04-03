@@ -8,7 +8,8 @@
   },
   "dependencies": {
     "fs-extra": "^5.0.0",
-    "nearley": "^2.11.0"
+    "nearley": "^2.11.0",
+    "yargs": "^11.0.0"
   },
   "scripts": {
     "build": "nearleyc grammar/index.ne -o grammar.js",

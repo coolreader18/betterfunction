@@ -13,7 +13,7 @@
 @include "commands.ne"
 block[INNER] -> "{" nl (_ $INNER nl {% data => data[1] %}):* _ "}" between {% data => data[2] %}
 statement[POSSIBILITIES] -> $POSSIBILITIES between {% data => data[0][0] %}
-full -> statementCrfn:* {% id %}
+creeperfunction -> statementCrfn:* {% id %}
 
 statementCrfn -> statement[(nspStatement | includeStatement)] {% id %}   # Base level statement
 
@@ -37,7 +37,7 @@ folderStatement -> "folder" __ w+ _ block[statementFolderornsp] {%
 		type: "folder",
 		name: data[2],
 		data: data[4][0].map(id)
-	}) 
+	})
 %}
 functionStatement ->  ("tick" __):? "function" __ w+ _ functionBlock {%
 	data => ({type: "function", name: data[3], commands: data[5], tick: !!data[0]})

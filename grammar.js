@@ -1,17 +1,17 @@
-// Generated automatically by nearley
+// Generated automatically by nearley, version 2.13.0
 // http://github.com/Hardmath123/nearley
 (function () {
-function id(x) {return x[0]; }
+function id(x) { return x[0]; }
 
-	function concat(data) {
-		return data.join("")
-	}
-	function concatid(data) {
-		return concat(id(data))
-	}
-	function nuller() {
-		return null;
-	}
+  function concat(data) {
+    return data.join("")
+  }
+  function concatid(data) {
+    return concat(id(data))
+  }
+  function nuller() {
+    return null;
+  }
 
 
   function flatten(arr) {
@@ -528,9 +528,9 @@ var grammar = {
           return data;
         }
         },
-    {"name": "full$ebnf$1", "symbols": []},
-    {"name": "full$ebnf$1", "symbols": ["full$ebnf$1", "statementCrfn"], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
-    {"name": "full", "symbols": ["full$ebnf$1"], "postprocess": id},
+    {"name": "creeperfunction$ebnf$1", "symbols": []},
+    {"name": "creeperfunction$ebnf$1", "symbols": ["creeperfunction$ebnf$1", "statementCrfn"], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
+    {"name": "creeperfunction", "symbols": ["creeperfunction$ebnf$1"], "postprocess": id},
     {"name": "statementCrfn$macrocall$2$subexpression$1", "symbols": ["nspStatement"]},
     {"name": "statementCrfn$macrocall$2$subexpression$1", "symbols": ["includeStatement"]},
     {"name": "statementCrfn$macrocall$2", "symbols": ["statementCrfn$macrocall$2$subexpression$1"]},
@@ -572,7 +572,7 @@ var grammar = {
         	type: "folder",
         	name: data[2],
         	data: data[4][0].map(id)
-        }) 
+        })
         },
     {"name": "functionStatement$ebnf$1$subexpression$1$string$1", "symbols": [{"literal":"t"}, {"literal":"i"}, {"literal":"c"}, {"literal":"k"}], "postprocess": function joiner(d) {return d.join('');}},
     {"name": "functionStatement$ebnf$1$subexpression$1", "symbols": ["functionStatement$ebnf$1$subexpression$1$string$1", "__"]},
@@ -614,7 +614,7 @@ var grammar = {
     {"name": "d+$ebnf$1", "symbols": ["d+$ebnf$1", /[\d]/], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
     {"name": "d+", "symbols": ["d+$ebnf$1"], "postprocess": concatid}
 ]
-  , ParserStart: "full"
+  , ParserStart: "creeperfunction"
 }
 if (typeof module !== 'undefined'&& typeof module.exports !== 'undefined') {
    module.exports = grammar;
