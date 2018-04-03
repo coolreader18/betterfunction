@@ -4,17 +4,24 @@ const grammar = require("./grammar.js");
 const fs = require("fs-extra");
 const parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammar));
 const path = require("path");
+const { terminal: term } = require("terminal-kit");
 const ext = ".crfunction"; // still not sure
 require("yargs").usage(
   "$0 <file> [args]",
   "parse a creeperfunction file into a datapack",
   yargs =>
-    yargs.positional("file", {
-      description: "the file or folder to parse into a datapack",
-      type: "string"
-    }),
+    yargs
+      .positional("file", {
+        description: "the file or folder to parse into a datapack",
+        type: "string"
+      })
+      .option("output", {
+        alias: "o",
+        type: "string",
+        description:
+          "where to save the datapack instead dirname(crfunction)/data"
+      }),
   argv => {
-    console.log(argv.file);
     const file = path.resolve(process.cwd(), argv.file);
     let wd;
     let toLoad;
@@ -25,7 +32,7 @@ require("yargs").usage(
       } catch (err) {
         if (err.code != "ENOENT") throw err;
         throw new Error(
-          "specified file is a direcory and the pack.mcmeta file is missing"
+          "specified file is a directory and the pack.mcmeta file is missing"
         );
       }
       if (!entry)
@@ -36,46 +43,44 @@ require("yargs").usage(
       toLoad = file;
       wd = path.dirname(file);
     }
-    const output = argv.output || path.join(wd, "data");
+    const output = argv.output
+      ? path.join(process.cwd(), argv.output)
+      : path.join(wd, "data");
     const tick = [];
     const generated = {};
     let curnsp;
     load(toLoad);
 
     if (tick.length) {
-      let mcfuncpath = path.join(output, "/minecraft/tags/functions");
+      let mcfuncpath = path.join(output, "minecraft/tags/functions");
       fs.mkdirpSync(mcfuncpath);
       fs.writeJSONSync(path.join(mcfuncpath, "tick.json"), { values: tick });
     }
-    for (let nsp in generated) {
-      folder({ name: "crfngen", data: generated[nsp] }, [
-        "data",
-        nsp,
-        "functions"
-      ]);
+    for (let [nsp, data] of Object.entries(generated)) {
+      folder({ name: "crfngen", data }, [nsp, "functions"]);
     }
 
-    console.log("\x1b[32m", "Done!");
+    term.green.bold("Done!\n");
 
     function load(crfile) {
       parser.feed(fs.readFileSync(crfile, "utf8"));
       const parsed = parser.results[0][0];
-      parsed.forEach(statement => {
-        if (statement) {
+      parsed.forEach(stmnt => {
+        if (stmnt) {
           ({
-            namespace(data) {
-              curnsp = data.name;
+            namespace: () => {
+              curnsp = stmnt.name;
               fs.emptyDirSync(path.join(output, curnsp, "functions"));
-              folder(Object.assign(data, { name: "functions" }), [curnsp]);
+              folder(Object.assign(stmnt, { name: "functions" }), [curnsp]);
             },
-            include(file) {
-              let fpath = path.join(path.dirname(crfile), file.include);
+            include: () => {
+              let fpath = path.join(path.dirname(crfile), stmnt.include);
               if (path.extname(fpath) == "") {
                 fpath = fpath + ext;
               }
               load(fpath);
             }
-          }[statement.type](statement));
+          }[stmnt.type]());
         }
       });
     }
