@@ -50,15 +50,17 @@ require("yargs").usage(
     const output = argv.output
       ? path.join(process.cwd(), argv.output)
       : path.join(wd, "data");
-    const tick = [];
+    const mctags = { tick: [], load: [] };
     const generated = {};
     let curnsp;
     load(toLoad);
 
-    if (tick.length) {
-      let mcfuncpath = path.join(output, "minecraft/tags/functions");
-      fs.mkdirpSync(mcfuncpath);
-      fs.writeJSONSync(path.join(mcfuncpath, "tick.json"), { values: tick });
+    for (let [tag, values] of Object.entries(mctags)) {
+      if (values.length) {
+        let mcfuncpath = path.join(output, "minecraft/tags/functions");
+        fs.mkdirpSync(mcfuncpath);
+        fs.writeJSONSync(path.join(mcfuncpath, `${tag}.json`), { values });
+      }
     }
     for (let [nsp, data] of Object.entries(generated)) {
       folder({ name: "crfngen", data }, [nsp, "functions"]);
@@ -119,8 +121,13 @@ require("yargs").usage(
               (str, cur) => str + handleCommand(cur) + "\n",
               ""
             );
-            if (func.tick) {
-              tick.push(`${curnsp}:${flpath.slice(2).join("/")}${func.name}`);
+            if (func.mctag) {
+              mctags[func.mctag].push(
+                `${curnsp}:${flpath
+                  .slice(2)
+                  .concat(func.name)
+                  .join("/")}`
+              );
             }
             fs.writeFileSync(
               path.join(output, ...flpath, func.name + ".mcfunction"),

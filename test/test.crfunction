@@ -18,7 +18,8 @@ namespace minibomb {
     }
   }
   folder foo {
-    function bar {
+    load function bar {
+      // will say baz when the world loads
       say baz
     }
   }

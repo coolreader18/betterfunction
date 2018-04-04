@@ -39,8 +39,13 @@ folderStatement -> "folder" __ w+ _ block[statementFolderornsp] {%
 		data: data[4][0].map(id)
 	})
 %}
-functionStatement ->  ("tick" __):? "function" __ w+ _ functionBlock {%
-	data => ({type: "function", name: data[3], commands: data[5], tick: !!data[0]})
+functionStatement ->  (("tick" | "load") __):? "function" __ w+ _ functionBlock {%
+	data => ({
+    type: "function",
+    name: data[3],
+    commands: data[5],
+    mctag: data[0] && data[0][0]
+  })
 %}
 functionBlock -> block[command] {% data => data[0].map(id) %}
 between -> (_ comment:? nl):* {% nuller %}

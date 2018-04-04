@@ -586,13 +586,21 @@ var grammar = {
         	data: data[4][0].map(id)
         })
         },
-    {"name": "functionStatement$ebnf$1$subexpression$1$string$1", "symbols": [{"literal":"t"}, {"literal":"i"}, {"literal":"c"}, {"literal":"k"}], "postprocess": function joiner(d) {return d.join('');}},
-    {"name": "functionStatement$ebnf$1$subexpression$1", "symbols": ["functionStatement$ebnf$1$subexpression$1$string$1", "__"]},
+    {"name": "functionStatement$ebnf$1$subexpression$1$subexpression$1$string$1", "symbols": [{"literal":"t"}, {"literal":"i"}, {"literal":"c"}, {"literal":"k"}], "postprocess": function joiner(d) {return d.join('');}},
+    {"name": "functionStatement$ebnf$1$subexpression$1$subexpression$1", "symbols": ["functionStatement$ebnf$1$subexpression$1$subexpression$1$string$1"]},
+    {"name": "functionStatement$ebnf$1$subexpression$1$subexpression$1$string$2", "symbols": [{"literal":"l"}, {"literal":"o"}, {"literal":"a"}, {"literal":"d"}], "postprocess": function joiner(d) {return d.join('');}},
+    {"name": "functionStatement$ebnf$1$subexpression$1$subexpression$1", "symbols": ["functionStatement$ebnf$1$subexpression$1$subexpression$1$string$2"]},
+    {"name": "functionStatement$ebnf$1$subexpression$1", "symbols": ["functionStatement$ebnf$1$subexpression$1$subexpression$1", "__"]},
     {"name": "functionStatement$ebnf$1", "symbols": ["functionStatement$ebnf$1$subexpression$1"], "postprocess": id},
     {"name": "functionStatement$ebnf$1", "symbols": [], "postprocess": function(d) {return null;}},
     {"name": "functionStatement$string$1", "symbols": [{"literal":"f"}, {"literal":"u"}, {"literal":"n"}, {"literal":"c"}, {"literal":"t"}, {"literal":"i"}, {"literal":"o"}, {"literal":"n"}], "postprocess": function joiner(d) {return d.join('');}},
     {"name": "functionStatement", "symbols": ["functionStatement$ebnf$1", "functionStatement$string$1", "__", "w+", "_", "functionBlock"], "postprocess": 
-        data => ({type: "function", name: data[3], commands: data[5], tick: !!data[0]})
+        data => ({
+            type: "function",
+            name: data[3],
+            commands: data[5],
+            mctag: data[0] && data[0][0]
+          })
         },
     {"name": "functionBlock$macrocall$2", "symbols": ["command"]},
     {"name": "functionBlock$macrocall$1$ebnf$1", "symbols": []},
