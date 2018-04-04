@@ -28,7 +28,9 @@ require("yargs").usage(
     if (fs.lstatSync(file).isDirectory()) {
       let entry;
       try {
-        entry = fs.readJSONSync(path.join(file, "pack.mcmeta")).entry || `index${ext}`;
+        entry =
+          fs.readJSONSync(path.join(file, "pack.mcmeta")).entry ||
+          `index${ext}`;
       } catch (err) {
         if (err.code != "ENOENT") throw err;
         throw new Error(
@@ -36,7 +38,9 @@ require("yargs").usage(
         );
       }
       if (!fs.existsSync(path.join(file, entry)))
-        throw new Error(`main field in pack.mcmeta is empty or missing and there is no index${ext} file`);
+        throw new Error(
+          `main field in pack.mcmeta is empty or missing and there is no index${ext} file`
+        );
       wd = file;
       toLoad = path.resolve(wd, entry);
     } else {
@@ -65,24 +69,22 @@ require("yargs").usage(
     function load(crfile) {
       parser.feed(fs.readFileSync(crfile, "utf8"));
       const parsed = parser.results[0][0];
-      parsed.forEach(stmnt => {
-        if (stmnt) {
-          ({
-            namespace: () => {
-              curnsp = stmnt.name;
-              fs.emptyDirSync(path.join(output, curnsp, "functions"));
-              folder(Object.assign(stmnt, { name: "functions" }), [curnsp]);
-            },
-            include: () => {
-              let fpath = path.join(path.dirname(crfile), stmnt.include);
-              if (path.extname(fpath) == "") {
-                fpath = fpath + ext;
-              }
-              load(fpath);
+      parsed.forEach(stmnt =>
+        ({
+          namespace: () => {
+            curnsp = stmnt.name;
+            fs.emptyDirSync(path.join(output, curnsp, "functions"));
+            folder(Object.assign(stmnt, { name: "functions" }), [curnsp]);
+          },
+          include: () => {
+            let fpath = path.join(path.dirname(crfile), stmnt.include);
+            if (path.extname(fpath) == "") {
+              fpath = fpath + ext;
             }
-          }[stmnt.type]());
-        }
-      });
+            load(fpath);
+          }
+        }[stmnt.type]())
+      );
     }
     function folder(data, flpath) {
       flpath.push(data.name);

@@ -11,7 +11,7 @@
 %}
 @builtin "string.ne"
 @include "commands.ne"
-block[INNER] -> "{" nl (_ $INNER nl {% data => data[1] %}):* _ "}" between {% data => data[2] %}
+block[INNER] -> "{" between (_ $INNER between {% data => data[1] %}):* _ "}" {% data => data[2] %}
 statement[POSSIBILITIES] -> $POSSIBILITIES between {% data => data[0][0] %}
 creeperfunction -> statementCrfn:* {% id %}
 
@@ -43,7 +43,8 @@ functionStatement ->  ("tick" __):? "function" __ w+ _ functionBlock {%
 	data => ({type: "function", name: data[3], commands: data[5], tick: !!data[0]})
 %}
 functionBlock -> block[command] {% data => data[0].map(id) %}
-between -> (_ nl):* {% nuller %}
+between -> (_ comment:? nl):* {% nuller %}
+comment -> ("#" | "//") nnl+
 string -> dqstring {% id %} | sqstring {% id %}
 nl -> "\r":? "\n" # new line
 nnl -> [^\r\n] # not new line

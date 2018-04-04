@@ -9,9 +9,10 @@ namespace minibomb {
       kill @e[type=item,nbt={Item:{id:"minecraft:gunpowder",Count:1b}},distance=..1,limit=1,sort=nearest]
       kill @s
     }
-    if entity @e[tag=g] {
-      say easier if statements
-    }
+    if entity @e[tag=g] { // comment here
+      say easier if statements # comment here
+    } // comment here
+    # comment here
     function {
       say inline function
     }
