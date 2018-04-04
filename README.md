@@ -36,5 +36,5 @@ namespace thenamespace {
 You need node and yarn or npm to install, or you grab the binary from /dist, but it may not be up to date
 
 ```sh
-yarn global add github:coolreader18/creeperfunction
+yarn global add https://github.com/coolreader18/creeperfunction
 ```
