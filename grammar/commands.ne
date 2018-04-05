@@ -6,11 +6,12 @@
   }
 %}
 @include "nbt.ne"
+@include "large-data.ne"
 
-selector -> "@" selectorBases ("[" selectorSpec:+ "]"):? | w+
-selectorSpec -> w+ "=" (nbt | range | "!":? w+) ("," " ":*):?
-selectorBases -> ("a" | "e" | "p" | "r" | "s") {% id %}
-dataid -> (w+ ":" | null) w+
+selector -> "@" selectorBases ("[" selectorSpec:+ "]"):? | word
+selectorSpec -> word "=" (nbt | range | "!":? word) ("," " ":*):?
+selectorBases -> ("a" | "e" | "p" | "r" | "s")
+dataid -> (word ":" | null) word
 tag -> "#" dataid
 tagorid -> tag | dataid
 posMacro[pre] -> $pre int:? " " $pre int:? " " $pre int:?
@@ -28,7 +29,9 @@ path -> [\[\]"\w]:+
 condition -> "block " pos " " tagorid
   | "blocks " pos " " pos " " pos " " ("all" | "masked")
   | "entity " selector
-  | "score " selector " " w+ " " (("<" | "<=" | "=" | "=>" | ">") " " selector " " w+ | "matches " range)
+  | "score " selector " " word " " (("<" | "<=" | "=" | "=>" | ">") " " selector " " word | "matches " range)
+word -> [\w-_+\.]:+
+operation -> ("%" | "+" | "*" | "-" | "/" | null) "=" | "<" | ">" | "><"
 
 
 advancement -> "advancement " ("grant" | "revoke") " " selector " " ("everything" | ("from" | "only" | "through" | "until") " " dataid)
@@ -56,7 +59,7 @@ execute -> "execute" (" " (
     "block " pos " " path " " datatype
     | "bossbar " dataid " " ("max" | "value")
     | "entity " selector " " path " " datatype
-    | "score " selector " " w+
+    | "score " selector " " word
     )
   )):*
   (" " ("run" | "runat" {% () => "run execute at @s run" %}) " " command):? {%
@@ -71,9 +74,9 @@ execute -> "execute" (" " (
       }
     }
   %}
-experience -> "experience " expPart
-expPart -> ("add " selector " " int | "set " selector " " d+) " " ("levels" | "points")
-  | "query " selector
+experience -> ("experience" | "xp") " " ("add " selector " " int
+  | "set " selector " " d+ " " ("levels" | "points")
+  | "query " selector)
 fill -> "fill " nnl+
 function -> "function " (functionBlock {%
   data => ({
@@ -85,7 +88,7 @@ gamemode -> "gamemode " gmode
 gamerule -> "gamerule " nnl+
 give -> "give " selector " " tagorid [\d]:*
 help -> "help " command
-if -> "if " "not ":? condition " " functionBlock {% 
+if -> "if " "not ":? condition " " functionBlock {%
   data => ({
     type: "if",
     condition: flatten(data[2]).join(""),
@@ -95,13 +98,28 @@ if -> "if " "not ":? condition " " functionBlock {%
 %}
 kill -> "kill " selector
 locate -> "locate " nnl+
-msg -> "msg " selector " " nnl+
+msg -> ("msg" | "w" | "tell") " " selector " " nnl+
 particle -> "particle " nnl+
 recipe -> "recipe " ("give" | "take") " " selector " " (tagorid | "*")
 reload -> "reload" _
 say -> "say " nnl+
-scoreboard -> "scoreboard " nnl+
-seed -> "seed" _
+scoreboard -> "scoreboard "
+  ("objectives "
+    ("add " word (" " criteria (" " nnl+):? | null {% () => "dummy" %})
+    | "list"
+    | "remove " word
+    | "setdisplay " display " " word
+  )
+  | "players " (
+    ("add" | "set") " " selector " " word " " int
+    | ("enable" | "get") " " selector " " word
+    | "list " selector
+    | "operation " selector " " word " " operation " " selector " " word
+    | "remove " selector " " word " " d+
+    | "reset " selector (" " word):?
+    )
+  )
+seed -> "seed"
 setblock -> "setblock " pos " " dataid (" " ("destroy" | "keep" | "replace")):?
 setworldspawn -> "setworldspawn " pos
 spawnpoint -> "spawnpoint " selector " " pos
@@ -109,20 +127,18 @@ spreadplayers -> "spreadplayers " nnl+
 stop -> "stop" _
 stopsound -> "stopsound " nnl+
 summon -> "summon " dataid (" " pos (" " nbt):?):?
-tag -> "tag " selector " " ("list" | ("add" | "remove") w+)
+tag -> "tag " selector " " ("list" | ("add" | "remove") word)
 team -> "team " nnl+
 teleport -> "teleport " (selector (selector | pos):? | pos)
 tell -> "tell " selector " " nnl:*
 tellraw -> "tellraw " selector " " nnl+
 time -> "time " nnl+
 title -> "title " selector " " nnl+
-tp -> teleport
-trigger -> "trigger " w+ " " ("add" | "set") d+
+trigger -> "trigger " word " " ("add" | "set") d+
 weather -> "weather " ("clear" | "rain" | "thunder") (" " d+ ):?
 worldborder -> "worldborder " nnl+
-xp -> "xp " expPart
 
-command -> (advancement|blockdata|bossbar|clear|clone|data|defaultgamemode|difficulty|effect|execute|experience|fill|function|gamemode|gamerule|give|if|kill|locate|msg|particle|playsound|recipe|reload|replaceitem|say|scoreboard|tag|team|seed|setblock|setworldspawn|spreadplayers|stopsound|summon|teleport|tellraw|tell|time|title|tp|trigger|weather|worldborder|xp) {%
+command -> (advancement|blockdata|bossbar|clear|clone|data|defaultgamemode|difficulty|effect|execute|experience|fill|function|gamemode|gamerule|give|if|kill|locate|msg|particle|playsound|recipe|reload|replaceitem|say|scoreboard|tag|team|seed|setblock|setworldspawn|spreadplayers|stopsound|summon|teleport|tellraw|tell|time|title|tp|trigger|weather|worldborder) {%
   data => {
     data = data[0][0]
     let cond = data.type == "execute";
