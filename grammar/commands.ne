@@ -11,7 +11,7 @@
 selector -> "@" selectorBases ("[" selectorSpec:+ "]"):? | word
 selectorSpec -> word "=" (nbt | range | "!":? word) ("," " ":*):?
 selectorBases -> ("a" | "e" | "p" | "r" | "s")
-dataid -> (word ":" | null) word
+dataid -> (word ":"):? word
 tag -> "#" dataid
 tagorid -> tag | dataid
 1pos -> "~" double | "~" | double
@@ -124,8 +124,8 @@ setblock -> "setblock " pos " " dataid (" " ("destroy" | "keep" | "replace")):?
 setworldspawn -> "setworldspawn " pos
 spawnpoint -> "spawnpoint " selector " " pos
 spreadplayers -> "spread" "players":? " " 1pos " " 1pos " " posDouble " " posDouble " " ("true" | "false") " " selector
-stop -> "stop" _
-stopsound -> "stopsound " nnl+
+stop -> "stop"
+stopsound -> "stopsound " selector " " soundtype (" " dataid):?
 summon -> "summon " dataid (" " pos (" " nbt):?):?
 tag -> "tag " selector " " ("list" | ("add" | "remove") word)
 team -> "team " nnl+
