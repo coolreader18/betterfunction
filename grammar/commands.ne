@@ -14,10 +14,10 @@ selectorBases -> ("a" | "e" | "p" | "r" | "s")
 dataid -> (word ":" | null) word
 tag -> "#" dataid
 tagorid -> tag | dataid
-posMacro[pre] -> $pre int:? " " $pre int:? " " $pre int:?
-pos -> int " " int " " int
-  | posMacro["~"]
-  | posMacro["^"]
+1pos -> "~" double | "~" | double
+rayPos -> "^" double
+pos -> 1pos " " 1pos " " 1pos
+  | rayPos " " rayPos " " rayPos
 path -> [\w"'\.[\]]:*
 gmode -> "survival" | "creative" | "adventure" | "spectator"
 difclty -> "easy" | "normal" | "hard" | "peaceful"
@@ -123,7 +123,7 @@ seed -> "seed"
 setblock -> "setblock " pos " " dataid (" " ("destroy" | "keep" | "replace")):?
 setworldspawn -> "setworldspawn " pos
 spawnpoint -> "spawnpoint " selector " " pos
-spreadplayers -> "spreadplayers " nnl+
+spreadplayers -> "spread" "players":? " " 1pos " " 1pos " " posDouble " " posDouble " " ("true" | "false") " " selector
 stop -> "stop" _
 stopsound -> "stopsound " nnl+
 summon -> "summon " dataid (" " pos (" " nbt):?):?
