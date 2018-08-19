@@ -1,39 +1,101 @@
 {
   "type": "file",
   "statements": [
-    [
-      {
-        "type": "namespaceStatement",
-        "name": "a",
-        "statements": [
-          [
-            [
-              {
-                "type": "functionStatement",
-                "name": "b",
-                "statements": [
-                  [
-                    [
-                      {
-                        "type": "callStatemet",
-                        "func": { "type": "funcIdent", "path": ["c"] },
-                        "params": {
-                          "type": "callParams",
-                          "posits": ["a", "b"],
-                          "named": { "c": "d" }
-                        },
-                        "parens": false
-                      }
-                    ]
-                  ]
+    {
+      "type": "namespaceStatement",
+      "name": "a",
+      "statements": [
+        {
+          "type": "functionStatement",
+          "name": "b",
+          "statements": [
+            {
+              "type": "callStatement",
+              "func": { "type": "funcIdent", "path": ["c"] },
+              "params": {
+                "type": "callParams",
+                "posits": [
+                  {
+                    "type": "childOp",
+                    "value": "::",
+                    "text": "::",
+                    "offset": 37,
+                    "lineBreaks": 0,
+                    "line": 3,
+                    "col": 9
+                  },
+                  {
+                    "type": "childOp",
+                    "value": "::",
+                    "text": "::",
+                    "offset": 42,
+                    "lineBreaks": 0,
+                    "line": 3,
+                    "col": 14
+                  }
                 ],
-                "mctag": null
-              }
-            ]
+                "named": {}
+              },
+              "parens": true
+            },
+            {
+              "type": "callStatement",
+              "func": { "type": "funcIdent", "path": ["a"] },
+              "params": {
+                "type": "callParams",
+                "posits": [
+                  {
+                    "type": "childOp",
+                    "value": "::",
+                    "text": "::",
+                    "offset": 57,
+                    "lineBreaks": 0,
+                    "line": 6,
+                    "col": 7
+                  },
+                  {
+                    "type": "childOp",
+                    "value": "::",
+                    "text": "::",
+                    "offset": 61,
+                    "lineBreaks": 0,
+                    "line": 6,
+                    "col": 11
+                  }
+                ],
+                "named": {}
+              },
+              "parens": false
+            }
+          ],
+          "mctag": null
+        },
+        {
+          "type": "functionStatement",
+          "name": "c",
+          "statements": [],
+          "mctag": null
+        },
+        {
+          "type": "folderStatement",
+          "name": "a",
+          "statements": [
+            {
+              "type": "functionStatement",
+              "name": "b",
+              "statements": [],
+              "mctag": null
+            },
+            {
+              "type": "functionStatement",
+              "name": "a",
+              "statements": [],
+              "mctag": null
+            }
           ]
-        ]
-      }
-    ],
-    [{ "type": "namespaceStatement", "name": "b", "statements": [] }]
+        }
+      ]
+    },
+    { "type": "namespaceStatement", "name": "b", "statements": [] }
   ]
 }

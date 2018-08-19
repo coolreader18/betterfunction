@@ -28,5 +28,6 @@ export const mainLexer = moo.compile({
   cmt: { match: /(?:#|\/\/).*/, lineBreaks: false },
   semi: ";",
   colon: ":",
-  string: /"[^"\\]*(?:\\.[^"\\]*)*"/
+  string: /"[^"\\]*(?:\\.[^"\\]*)*"/,
+  nl: { match: /\r?\n/, lineBreaks: true }
 });

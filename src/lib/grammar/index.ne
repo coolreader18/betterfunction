@@ -11,8 +11,8 @@
 %}
 @lexer mainLexer
 
-innerBlock[INNER] -> _ ( $INNER _ {% data => data[0][0] %} ):* {% nth(1) %}
-block[INNER] -> %lb innerBlock[$INNER] %rb {% nth(1) %}
+innerBlock[INNER] -> _ ( $INNER _ {% data => data[0][0][0] %} ):* {% nth(1) %}
+block[INNER] -> %lb innerBlock[$INNER] %rb {% data => data[1].map(cur => cur[0]) %}
 
 betterfunction -> innerBlock[statementBtfn] {%
   data => ({
@@ -22,7 +22,7 @@ betterfunction -> innerBlock[statementBtfn] {%
 %}
 
 statementBtfn -> nspStatement | includeStatement # Base level statement
-includeStatement -> %kw_include __ string %semi {%
+includeStatement -> %kw_include __ string term {%
 	data => ({
 		type: "includeStatement",
 		include: data[2]
@@ -54,17 +54,17 @@ functionStatement ->  ( ( %kw_tick | %kw_load ) __ ):? %kw_function __ ident _ b
 %}
 
 statementFunction -> callStatement
-callStatement -> funcIdent ( 
+callStatement -> funcIdent _ ( 
   %lp callParams %rp {% data => [data[1], true] %} | callParams {% data => [data[0], false] %} 
-) %semi {%
+) term {%
   data => ({
-    type: "callStatemet",
+    type: "callStatement",
     func: data[0],
-    params: data[1][0],
-    parens: data[1][1]
+    params: data[2][0],
+    parens: data[2][1]
   })
 %}
-callParams -> _ ( 
+callParams -> _ (
   ( expr _ %comma _  {% nth(0) %} ):*
   expr 
   ( _ %comma _ ident _ %colon _ expr {% data => [data[3], data[7]] %} ):*
@@ -95,7 +95,7 @@ funcIdent -> ident ( _ %childOp _ ident ):* {%
   })
 %}
 
-expr -> ident {% id %}
+expr -> %childOp {% id %}
 
 string -> %string {%
   data => ({
@@ -118,3 +118,5 @@ cmt -> %cmt {%
 ident -> %ident {%
   data => data[0].value
 %}
+# statement terminator
+term -> _ %semi
