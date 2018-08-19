@@ -1,0 +1,7 @@
+namespace a {
+  function b {
+    c a, b, c: d;
+  }
+}
+namespace b {
+}

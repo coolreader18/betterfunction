@@ -1,60 +1,120 @@
 @{%
-  function concat(data) {
-    return data.join("")
-  }
-  function concatid(data) {
-    return concat(id(data))
-  }
-  function nuller() {
-    return null;
-  }
+  const concat = data => data.join("")
+
+  const concatid = data => concat(id(data))
+
+  const nuller = () => null;
+
+  const nth = i => data => data[i]
+
+  const { mainLexer } = require("./lexer");
 %}
-@builtin "string.ne"
-@include "commands.ne"
-block[INNER] -> "{" between (_ $INNER between {% data => data[1] %}):* _ "}" {% data => data[2] %}
-statement[POSSIBILITIES] -> $POSSIBILITIES between {% data => data[0][0] %}
-betterfunction -> between statementBtfn:* {% d => d[1] %}
+@lexer mainLexer
 
-statementBtfn-> statement[(nspStatement | includeStatement)] {% id %}   # Base level statement
+innerBlock[INNER] -> _ ( $INNER _ {% data => data[0][0] %} ):* {% nth(1) %}
+block[INNER] -> %lb innerBlock[$INNER] %rb {% nth(1) %}
 
-includeStatement -> "include" __ string {%
+betterfunction -> innerBlock[statementBtfn] {%
+  data => ({
+    type: "file",
+    statements: data[0]
+  })
+%}
+
+statementBtfn -> nspStatement | includeStatement # Base level statement
+includeStatement -> %kw_include __ string %semi {%
 	data => ({
-		type: "include",
+		type: "includeStatement",
 		include: data[2]
 	})
 %}
-nspStatement -> "namespace" __ word _ block[statementFolderornsp] {%
+nspStatement -> %kw_namespace __ ident _ block[statementFolderOrNsp] {%
 	data => ({
-      type: "namespace",
-      name: data[2],
-      data: data[4].map(cur => cur[0][0])
+    type: "namespaceStatement",
+    name: data[2],
+    statements: data[4]
   })
 %}
 
-statementFolderornsp -> statement[(functionStatement | folderStatement)] {% id %}
-folderStatement -> "folder" __ word _ block[statementFolderornsp] {%
+statementFolderOrNsp -> functionStatement | folderStatement
+folderStatement -> %kw_folder __ ident _ block[statementFolderOrNsp] {%
 	data => ({
-		type: "folder",
+		type: "folderStatement",
 		name: data[2],
-		data: data[4][0].map(id)
+		statements: data[4]
 	})
 %}
-functionStatement ->  (("tick" | "load") __):? "function" __ word _ functionBlock {%
+functionStatement ->  ( ( %kw_tick | %kw_load ) __ ):? %kw_function __ ident _ block[statementFunction] {%
 	data => ({
-    type: "function",
+    type: "functionStatement",
     name: data[3],
-    commands: data[5],
-    mctag: data[0] && data[0][0]
+    statements: data[5],
+    mctag: data[0] && data[0][0].value
   })
 %}
-functionBlock -> block[command] {% data => data[0].map(id) %}
-between -> (_ comment:? nl):* {% nuller %}
-comment -> ("#" | "//") nnlp
-string -> dqstring {% id %} | sqstring {% id %}
-word -> [\w-_+\.]:+
-_ -> [\t ]:*
-__ -> [\t ]:+
-nl -> "\r":? "\n"
-dp -> [\d]:+
-nnl -> [^\r\n] # not new line
-nnlp -> nnl:+ # not new line, once or more
+
+statementFunction -> callStatement
+callStatement -> funcIdent ( 
+  %lp callParams %rp {% data => [data[1], true] %} | callParams {% data => [data[0], false] %} 
+) %semi {%
+  data => ({
+    type: "callStatemet",
+    func: data[0],
+    params: data[1][0],
+    parens: data[1][1]
+  })
+%}
+callParams -> _ ( 
+  ( expr _ %comma _  {% nth(0) %} ):*
+  expr 
+  ( _ %comma _ ident _ %colon _ expr {% data => [data[3], data[7]] %} ):*
+  _
+):? {%
+  data => {
+    const node = {
+      type: "callParams",
+      posits: [],
+      named: {}
+    };
+
+    top: {
+      if (!data[1]) break top;
+      if (data[1][0]) node.posits.splice(-1, 0, ...data[1][0]);
+      node.posits.push(data[1][1]);
+      if (!data[1][2]) break top;
+      data[1][2].forEach(([key, val]) => node.named[key] = val);
+    }
+
+    return node;
+  }
+%}
+funcIdent -> ident ( _ %childOp _ ident ):* {%
+  data => ({
+    type: "funcIdent",
+    path: [data[0], ...data[1].map(cur => cur[3])]
+  })
+%}
+
+expr -> ident {% id %}
+
+string -> %string {%
+  data => ({
+    type: "string",
+    content: JSON.parse(data[0].value)
+  })
+%}
+_ -> %__:? {% nuller %} | _ cmt _
+__ -> %__ {% nuller %} | __ cmt _
+cmt -> %cmt {%
+  data => {
+    const match = /^(#|\/\/)(.*)$/.exec(data[0].value);
+    return {
+      type: "comment",
+      cmtToken: match[1],
+      content: match[2]
+    };
+  }
+%}
+ident -> %ident {%
+  data => data[0].value
+%}

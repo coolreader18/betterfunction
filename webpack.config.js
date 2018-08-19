@@ -6,6 +6,7 @@ const config = {
     lib: "./src/lib/index.ts",
     cli: "./src/cli/index.ts"
   },
+  target: "node",
   output: {
     filename: "[name].js",
     path: path.resolve("./dist")

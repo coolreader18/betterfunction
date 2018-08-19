@@ -54,7 +54,9 @@ export const load = (file: string, out?: string) => {
 
   function load(crfile) {
     parser.feed(fs.readFileSync(crfile, "utf8"));
-    const parsed = parser.results[0][0];
+    const parsed = parser.results[0];
+    fs.writeJSONSync(path.resolve(process.cwd(), "out.json"), parsed);
+    return;
     parsed.forEach(stmnt =>
       ({
         namespace: () => {

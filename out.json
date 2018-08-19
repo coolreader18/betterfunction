@@ -1,0 +1,39 @@
+{
+  "type": "file",
+  "statements": [
+    [
+      {
+        "type": "namespaceStatement",
+        "name": "a",
+        "statements": [
+          [
+            [
+              {
+                "type": "functionStatement",
+                "name": "b",
+                "statements": [
+                  [
+                    [
+                      {
+                        "type": "callStatemet",
+                        "func": { "type": "funcIdent", "path": ["c"] },
+                        "params": {
+                          "type": "callParams",
+                          "posits": ["a", "b"],
+                          "named": { "c": "d" }
+                        },
+                        "parens": false
+                      }
+                    ]
+                  ]
+                ],
+                "mctag": null
+              }
+            ]
+          ]
+        ]
+      }
+    ],
+    [{ "type": "namespaceStatement", "name": "b", "statements": [] }]
+  ]
+}
