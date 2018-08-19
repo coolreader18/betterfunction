@@ -13,9 +13,9 @@
 @include "commands.ne"
 block[INNER] -> "{" between (_ $INNER between {% data => data[1] %}):* _ "}" {% data => data[2] %}
 statement[POSSIBILITIES] -> $POSSIBILITIES between {% data => data[0][0] %}
-creeperfunction -> statementCrfn:* {% id %}
+betterfunction -> between statementBtfn:* {% d => d[1] %}
 
-statementCrfn -> statement[(nspStatement | includeStatement)] {% id %}   # Base level statement
+statementBtfn-> statement[(nspStatement | includeStatement)] {% id %}   # Base level statement
 
 includeStatement -> "include" __ string {%
 	data => ({
@@ -23,7 +23,7 @@ includeStatement -> "include" __ string {%
 		include: data[2]
 	})
 %}
-nspStatement -> "namespace" __ w+ _ block[statementFolderornsp] {%
+nspStatement -> "namespace" __ word _ block[statementFolderornsp] {%
 	data => ({
       type: "namespace",
       name: data[2],
@@ -32,14 +32,14 @@ nspStatement -> "namespace" __ w+ _ block[statementFolderornsp] {%
 %}
 
 statementFolderornsp -> statement[(functionStatement | folderStatement)] {% id %}
-folderStatement -> "folder" __ w+ _ block[statementFolderornsp] {%
+folderStatement -> "folder" __ word _ block[statementFolderornsp] {%
 	data => ({
 		type: "folder",
 		name: data[2],
 		data: data[4][0].map(id)
 	})
 %}
-functionStatement ->  (("tick" | "load") __):? "function" __ w+ _ functionBlock {%
+functionStatement ->  (("tick" | "load") __):? "function" __ word _ functionBlock {%
 	data => ({
     type: "function",
     name: data[3],
@@ -49,12 +49,12 @@ functionStatement ->  (("tick" | "load") __):? "function" __ w+ _ functionBlock 
 %}
 functionBlock -> block[command] {% data => data[0].map(id) %}
 between -> (_ comment:? nl):* {% nuller %}
-comment -> ("#" | "//") nnl+
+comment -> ("#" | "//") nnlp
 string -> dqstring {% id %} | sqstring {% id %}
-nl -> "\r":? "\n" # new line
+word -> [\w-_+\.]:+
+_ -> [\t ]:*
+__ -> [\t ]:+
+nl -> "\r":? "\n"
+dp -> [\d]:+
 nnl -> [^\r\n] # not new line
-nnl+ -> nnl:+ {% concatid %} # not new line, once or more
-_ -> [\t ]:* {% id %}
-__ -> [\t ]:+ {% id %}
-w+ -> [\w]:+ {% concatid %}
-d+ -> [\d]:+ {% concatid %}
+nnlp -> nnl:+ # not new line, once or more

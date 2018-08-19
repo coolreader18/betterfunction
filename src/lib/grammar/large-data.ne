@@ -1,8 +1,8 @@
 criteria -> "dummy" | "trigger" | "deathCount" | "playerKillCount"
   | "totalKillCount" | "health" | "xp" | "level" | "food" | "air" | "armor"
-  | "minecraft." ((
+  | "minecraft." (
       "broken" | "crafted" | "dropped" | "killed" | "mined" | "picked_up" | "used" |
-    ) ":" word)
+     ":" word)
   | ("teamkill" | "killedByTeam") "." color
 
 color -> "dark_blue" | "dark_green" | "dark_aqua" | "dark_red" | "dark_purple" | "gold" | "gray" | "dark_gray" | "blue" | "green" | "aqua" | "red" | "light_purple" | "yellow" | "white"

@@ -1,3 +1,4 @@
+
 namespace minibomb {
   tick function minibomb {
     execute as @e[type=item,nbt={Item:{tag:{Tags:["minibomb"]}},OnGround:1b},tag=!noExplodeMB] runat function {
