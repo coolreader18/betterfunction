@@ -1,5 +1,8 @@
 namespace a {
-  func b {
-    if 1.2, 3.4;
+  func function {
+    if $entity @e, func {
+
+    }, true;
+    a (~ ~ ~);
   }
 }

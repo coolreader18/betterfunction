@@ -42,7 +42,7 @@ singleSelector -> ident _ %eq _ (
   data => [data[0], data[4]]
 %}
 
-nbtVal -> (num | obj | string | list) {% id2 %}
+nbtVal -> ( num | obj | string | list | bool ) {% id2 %}
 objField -> ( ident | string ) _ %colon _ nbtVal {% data => [data[0][0], data[4]] %}
 obj -> %lb delim[objField, %comma] %rb {%
   data => ({
@@ -56,5 +56,37 @@ num -> %num {%
     content: JSON.parse(data[0])
   })
 %}
+bool -> ( %kw_true | %kw_false ) {%
+  data => ({
+    type: "bool",
+    content: JSON.parse(data[0][0])
+  })
+%}
 
-expr -> (functionExpr | string | selector | nbtVal) {% id2 %}
+cond -> %cond _ ( "entity" __ selector ) {%
+  data => ({
+    type: "cond",
+    case: data[2][0].value,
+    args: data[2].slice(1).filter(a => a)
+  })
+%}
+
+pos -> 1pos __ 1pos __ 1pos {%
+  data => ({
+    type: "pos",
+    rays: false,
+    coords: [data[0], data[2], data[4]]
+  })
+%} | 1raypos __ 1raypos __ 1raypos {%
+  data => ({
+    type: "pos",
+    rays: true,
+    coords: [data[0], data[2], data[4]]
+  })
+%}
+1pos -> ( %rel:? num | %rel ) {%
+  data => ({ type: "1pos", relative: !!data[0], ray: false, coord: data[1] ? data[1].content : 0 })
+%}
+1raypos -> %ray num {% data => ({ type: "1pos", relative: false, ray: true, coord: data[1].content }) %}
+
+expr -> ( functionExpr | string | selector | nbtVal | cond | pos ) {% id2 %}

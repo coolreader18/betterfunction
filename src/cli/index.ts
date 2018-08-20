@@ -1,8 +1,9 @@
 import chalk from "chalk";
 import path from "path";
+import yargs from "yargs";
 import * as btfn from "../lib/index";
 
-require("yargs").usage(
+yargs.usage(
   "$0 <file|directory> [args]",
   "parse a betterfunction file into a datapack",
   yargs =>

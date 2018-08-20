@@ -6,7 +6,9 @@ const keywords: string[] = [
   "include",
   "folder",
   "tick",
-  "load"
+  "load",
+  "true",
+  "false"
 ];
 
 export default moo.compile({
@@ -32,6 +34,9 @@ export default moo.compile({
   eq: "=",
   not: "!",
   range: "..",
+  cond: "$",
+  rel: "~",
+  ray: "^",
   cmt: { match: /\/\/.*/, lineBreaks: false },
   string: /"[^"\\]*(?:\\.[^"\\]*)*"/,
   nl: { match: /\r?\n/, lineBreaks: true },

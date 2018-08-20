@@ -7,7 +7,7 @@
       "statements": [
         {
           "type": "functionStatement",
-          "name": "b",
+          "name": "function",
           "statements": [
             {
               "type": "callStatement",
@@ -22,20 +22,75 @@
                 "posits": [
                   [
                     {
-                      "type": "num",
-                      "content": 1.2
+                      "type": "cond",
+                      "case": "entity",
+                      "args": [
+                        {
+                          "type": "selector",
+                          "target": "e",
+                          "args": {}
+                        }
+                      ]
                     }
                   ],
                   [
                     {
-                      "type": "num",
-                      "content": 3.4
+                      "type": "function",
+                      "statements": []
+                    }
+                  ],
+                  [
+                    {
+                      "type": "bool",
+                      "content": true
                     }
                   ]
                 ],
                 "named": {}
               },
               "parens": false
+            },
+            {
+              "type": "callStatement",
+              "func": {
+                "type": "funcIdent",
+                "path": [
+                  "a"
+                ]
+              },
+              "params": {
+                "type": "callParams",
+                "posits": [
+                  [
+                    {
+                      "type": "pos",
+                      "rays": false,
+                      "coords": [
+                        {
+                          "type": "1pos",
+                          "relative": true,
+                          "ray": false,
+                          "coord": 0
+                        },
+                        {
+                          "type": "1pos",
+                          "relative": true,
+                          "ray": false,
+                          "coord": 0
+                        },
+                        {
+                          "type": "1pos",
+                          "relative": true,
+                          "ray": false,
+                          "coord": 0
+                        }
+                      ]
+                    }
+                  ]
+                ],
+                "named": {}
+              },
+              "parens": true
             }
           ],
           "mctag": null
