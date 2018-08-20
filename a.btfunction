@@ -1,7 +1,5 @@
 namespace a {
   func b {
-    if {}, func {
-      
-    };
+    if 1.2, 3.4;
   }
 }

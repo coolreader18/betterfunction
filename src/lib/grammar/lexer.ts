@@ -11,7 +11,7 @@ const keywords: string[] = [
 
 export default moo.compile({
   ident: {
-    match: /[\w_]+/,
+    match: /[A-Za-z_][\w]*/,
     keywords: keywords
       .map(kw => [`kw_${kw}`, kw])
       .reduce((obj, [key, val]) => ((obj[key] = val), obj), {} as {

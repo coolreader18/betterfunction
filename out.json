@@ -22,14 +22,14 @@
                 "posits": [
                   [
                     {
-                      "type": "obj",
-                      "fields": {}
+                      "type": "num",
+                      "content": 1.2
                     }
                   ],
                   [
                     {
-                      "type": "function",
-                      "statements": []
+                      "type": "num",
+                      "content": 3.4
                     }
                   ]
                 ],
