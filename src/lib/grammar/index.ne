@@ -5,14 +5,20 @@
 
   const nuller = () => null;
 
-  const nth = i => data => data[i]
+  const nth = i => data => data[i];
+  const id2 =  data => data[0][0]
 
-  const { mainLexer } = require("./lexer");
+  const lexer = require("./lexer").default;
 %}
-@lexer mainLexer
+@lexer lexer
 
 innerBlock[INNER] -> _ ( $INNER _ {% data => data[0][0][0] %} ):* {% nth(1) %}
 block[INNER] -> %lb innerBlock[$INNER] %rb {% data => data[1].map(cur => cur[0]) %}
+delim[el, del] -> ( $el ( _ $del _ $el {% nth(3) %} ):* ):? {%
+  data => data[0] ? [data[0][0], ...data[0][1]] : []
+%}
+
+
 
 betterfunction -> innerBlock[statementBtfn] {%
   data => ({
@@ -44,7 +50,8 @@ folderStatement -> %kw_folder __ ident _ block[statementFolderOrNsp] {%
 		statements: data[4]
 	})
 %}
-functionStatement ->  ( ( %kw_tick | %kw_load ) __ ):? %kw_function __ ident _ block[statementFunction] {%
+functionBlock -> block[statementFunction] {% id %}
+functionStatement ->  ( ( %kw_tick | %kw_load ) __ ):? %kw_function __ ident _ functionBlock {%
 	data => ({
     type: "functionStatement",
     name: data[3],
@@ -64,12 +71,14 @@ callStatement -> funcIdent _ (
     parens: data[2][1]
   })
 %}
+namedParam -> ident _ %colon _ expr {% data => [data[0], data[4]] %}
 callParams -> _ (
-  ( expr _ %comma _  {% nth(0) %} ):*
-  expr 
-  ( _ %comma _ ident _ %colon _ expr {% data => [data[3], data[7]] %} ):*
-  _
-):? {%
+  delim[expr, %comma] ( _ %comma _ delim[namedParam, %comma] {% nth(3) %} ):? {%
+    data => ({ posits: data[0], named: data[1] }) 
+  %} |
+  delim[nameParam, %comma]:? {% data => ({ named: data[0] }) %}
+)  _
+ {%
   data => {
     const node = {
       type: "callParams",
@@ -77,13 +86,8 @@ callParams -> _ (
       named: {}
     };
 
-    top: {
-      if (!data[1]) break top;
-      if (data[1][0]) node.posits.splice(-1, 0, ...data[1][0]);
-      node.posits.push(data[1][1]);
-      if (!data[1][2]) break top;
-      data[1][2].forEach(([key, val]) => node.named[key] = val);
-    }
+    if (data[1].posits) node.posits.splice(-1, 0, ...data[1].posits);
+    if (data[1].named) data[1].named.forEach(([key, val]) => node.named[key] = val);
 
     return node;
   }
@@ -95,8 +99,6 @@ funcIdent -> ident ( _ %childOp _ ident ):* {%
   })
 %}
 
-expr -> %childOp {% id %}
-
 string -> %string {%
   data => ({
     type: "string",
@@ -107,10 +109,9 @@ _ -> %__:? {% nuller %} | _ cmt _
 __ -> %__ {% nuller %} | __ cmt _
 cmt -> %cmt {%
   data => {
-    const match = /^(#|\/\/)(.*)$/.exec(data[0].value);
+    const match = /^\/\/(.*)$/.exec(data[0].value);
     return {
       type: "comment",
-      cmtToken: match[1],
       content: match[2]
     };
   }
@@ -120,3 +121,5 @@ ident -> %ident {%
 %}
 # statement terminator
 term -> _ %semi
+
+@include "./expressions.ne"

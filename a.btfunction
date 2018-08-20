@@ -1,16 +1,5 @@
 namespace a {
   function b {
-    c ( :: , :: ) ;
-
-
-    a ::, :: ;
+    c @e ,{a:{},b:{},c:{}};
   }
-  function c {
-  }
-  folder a {
-    function b {}
-    function a {}
-  }
-}
-namespace b {
 }

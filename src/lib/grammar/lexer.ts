@@ -9,7 +9,7 @@ const keywords: string[] = [
   "load"
 ];
 
-export const mainLexer = moo.compile({
+export default moo.compile({
   ident: {
     match: /[\w_]+/,
     keywords: keywords
@@ -24,10 +24,17 @@ export const mainLexer = moo.compile({
   rp: ")",
   lb: "{",
   rb: "}",
+  ls: "[",
+  rs: "]",
   comma: ",",
-  cmt: { match: /(?:#|\/\/).*/, lineBreaks: false },
   semi: ";",
   colon: ":",
+  eq: "=",
+  not: "!",
+  range: "..",
+  cmt: { match: /\/\/.*/, lineBreaks: false },
   string: /"[^"\\]*(?:\\.[^"\\]*)*"/,
-  nl: { match: /\r?\n/, lineBreaks: true }
+  nl: { match: /\r?\n/, lineBreaks: true },
+  sel: /@(?:a|e|p|r|s)/,
+  num: /\d*\.\d+|\d+/
 });
