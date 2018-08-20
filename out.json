@@ -14,7 +14,7 @@
               "func": {
                 "type": "funcIdent",
                 "path": [
-                  "c"
+                  "if"
                 ]
               },
               "params": {
@@ -22,28 +22,14 @@
                 "posits": [
                   [
                     {
-                      "type": "selector",
-                      "target": "e",
-                      "args": {}
+                      "type": "obj",
+                      "fields": {}
                     }
                   ],
                   [
                     {
-                      "type": "obj",
-                      "fields": {
-                        "a": {
-                          "type": "obj",
-                          "fields": {}
-                        },
-                        "b": {
-                          "type": "obj",
-                          "fields": {}
-                        },
-                        "c": {
-                          "type": "obj",
-                          "fields": {}
-                        }
-                      }
+                      "type": "function",
+                      "statements": []
                     }
                   ]
                 ],

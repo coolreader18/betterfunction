@@ -51,7 +51,7 @@ folderStatement -> %kw_folder __ ident _ block[statementFolderOrNsp] {%
 	})
 %}
 functionBlock -> block[statementFunction] {% id %}
-functionStatement ->  ( ( %kw_tick | %kw_load ) __ ):? %kw_function __ ident _ functionBlock {%
+functionStatement ->  ( ( %kw_tick | %kw_load ) __ ):? %kw_func __ ident _ functionBlock {%
 	data => ({
     type: "functionStatement",
     name: data[3],

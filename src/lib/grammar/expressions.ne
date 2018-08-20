@@ -6,7 +6,7 @@ delim[el, del] -> ( $el ( _ $del _ $el {% nth(3) %} ):* ):? {%
   data => data[0] ? [data[0][0][0], ...data[0][1].map(cur=>cur[0])] : []
 %}
 
-functionExpr -> %kw_function _ functionBlock {%
+functionExpr -> %kw_func _ functionBlock {%
   data => ({
     type: "function",
     statements: data[2]

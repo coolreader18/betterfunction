@@ -2,7 +2,7 @@ import moo from "moo";
 
 const keywords: string[] = [
   "namespace",
-  "function",
+  "func",
   "include",
   "folder",
   "tick",

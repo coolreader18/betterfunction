@@ -1,5 +1,7 @@
 namespace a {
-  function b {
-    c @e ,{a:{},b:{},c:{}};
+  func b {
+    if {}, func {
+      
+    };
   }
 }
