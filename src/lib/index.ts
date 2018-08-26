@@ -28,37 +28,66 @@ export const load = (file: string, out?: string) => {
   const parsed: betterfunction.File = parser.results[0];
 };
 
+interface TransformContext {
+  mctags: { tick: string[][]; load: string[][] };
+  gen: string[];
+  stack: string[];
+}
 export const transform = (content: string) => {
   const parser = new nearley.Parser(grammar);
   parser.feed(content);
   const parsed: betterfunction.File = parser.results[0];
-  fs.writeJSONSync("./out.json", parsed, { spaces: 2 });
+  const ctx: TransformContext = {
+    mctags: { tick: [], load: [] },
+    gen: [],
+    stack: []
+  };
   for (const stmnt of parsed.statements) {
     switch (stmnt.type) {
       case "namespaceStatement":
-        transformNamespace(stmnt);
+        ctx.stack.push(stmnt.name);
+        transformNamespace(stmnt, ctx);
+        ctx.stack.pop();
         break;
     }
   }
 };
 
-const transformNamespace = (nsp: betterfunction.NamespaceStatement) => {
+interface NamespaceChildren {
+  [k: string]: string | NamespaceChildren;
+}
+const transformNamespace = (
+  nsp: betterfunction.NamespaceStatement | betterfunction.FolderStatement,
+  ctx: TransformContext
+) => {
+  const children: NamespaceChildren = {};
   for (const stmnt of nsp.statements) {
     switch (stmnt.type) {
       case "functionStatement":
-        transformFunction(stmnt);
+        children[stmnt.name] = transformFunction(stmnt, ctx);
+        break;
+      case "folderStatement":
+        ctx.stack.push(stmnt.type);
+        children[stmnt.name] = transformNamespace(stmnt, ctx);
+        ctx.stack.pop();
         break;
     }
   }
+  return children;
 };
 
-const transformFunction = (func: betterfunction.FunctionStatement) => {
+const transformFunction = (
+  func: betterfunction.FunctionStatement,
+  ctx: TransformContext
+) => {
+  if (func.mctag) ctx.mctags[func.mctag].push([...ctx.stack, func.name]);
+  const cmds: string[] = [];
   for (const stmnt of func.statements) {
     const valid = validateCall(stmnt);
     if (!valid) throw new Error("oof");
-    const transformed = transformCall(stmnt);
-    console.log(transformed);
+    cmds.push(transformCall(stmnt));
   }
+  return cmds.join("\n");
 };
 
 const validateCall = (call: betterfunction.CallStatement): boolean => {
@@ -78,11 +107,8 @@ const validateCall = (call: betterfunction.CallStatement): boolean => {
 };
 const validateTypes = (left: LibType, right: LibType) => left === right;
 
-const transformCall = (call: betterfunction.CallStatement): string | null => {
-  const funcDef = getFuncDef(call.func);
-  if (!funcDef) return null;
-  return funcDef.transform(call.params.posits, call.params.named);
-};
+const transformCall = (call: betterfunction.CallStatement): string =>
+  getFuncDef(call.func)!.transform(call.params.posits, call.params.named);
 
 const getFuncDef = ({ path }: betterfunction.FuncIdent): LibFunc | null => {
   let cur: LibChild = btfnLib;
