@@ -2,3 +2,4 @@ node_modules
 test/data
 yarn-error.log
 dist/
+.rpt2_cache

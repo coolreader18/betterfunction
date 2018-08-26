@@ -3,7 +3,14 @@
 innerBlock[INNER] -> _ ( $INNER _ {% data => data[0][0][0] %} ):* {% nth(1) %}
 block[INNER] -> %lb innerBlock[$INNER] %rb {% data => data[1].map(cur => cur[0]) %}
 delim[el, del] -> ( $el ( _ $del _ $el {% nth(3) %} ):* ):? {%
-  data => data[0] ? [data[0][0][0], ...data[0][1].map(cur=>cur[0])] : []
+  data => data[0] ? [data[0][0], ...data[0][1]].map(cur=>cur[0]) : []
+%}
+optional[el] -> %not:? _ $el {%
+  data => ({
+    type: "optional",
+    not: !!data[0],
+    value: data[2]
+  })
 %}
 
 functionExpr -> %kw_func _ functionBlock {%
@@ -13,20 +20,33 @@ functionExpr -> %kw_func _ functionBlock {%
   })
 %}
 
-selec[ld, rd] -> $ld _ delim[singleSelector, %comma] _ $rd {% nth(2) %}
+selec[ld, rd] -> $ld _ delim[singleSelector, %comma] _ $rd {%
+  data => data[2].reduce((obj,[key,val])=>(obj[key]=val,obj),{})
+%}
 selector -> %sel selec[%ls, %rs]:? {%
   data => ({
     type: "selector",
     target: data[0].value.match(/@(.)/)[1],
-    args: (data[1] || []).reduce((obj,[key,val])=>(obj[key]=val,obj),{})
+    args: data[1] || {}
   })
 %}
+singleSelectorOptional -> (
+    ident {% data => ({ type: "string", content: data[0] }) %}
+  | string
+  | null {% () => ({ type: "string", content: "" }) %}
+  | idOrTag
+) {% id2 %}
 singleSelector -> ident _ %eq _ (
-  nbtVal {% id %} |
-  ( %not _ ident:? ):? |
-  %not _ idOrTag |
-  selec[%rb, %lb] |
-  ( num %range num? | %range num ) {%
+    nbtVal {% id %}
+  | optional[singleSelectorOptional]
+  | %not _ idOrTag
+  | selec[%rb, %lb] {%
+    data => ({
+      type: "map",
+      data: data[0]
+    })
+  %}
+  | ( num %range num? | %range num ) {%
     data => {
       const node = { type: "first", start: null, end: null };
       if (data[0][0].type === "num") {
@@ -47,7 +67,7 @@ objField -> ( ident | string ) _ %colon _ nbtVal {% data => [data[0][0], data[4]
 obj -> %lb delim[objField, %comma] %rb {%
   data => ({
     type: "obj",
-    fields: data[1].reduce((obj,[key,val])=>(obj[key]=val,obj),{})
+    data: data[1].reduce((obj,[key,val])=>(obj[key]=val,obj),{})
   })
 %}
 num -> %num {% 
@@ -62,6 +82,12 @@ bool -> ( %kw_true | %kw_false ) {%
     content: JSON.parse(data[0][0])
   })
 %}
+list -> %ls _ delim[nbtVal, %comma] _ %rs {%
+  data => ({
+    type: "list",
+    data: data[2]
+  })
+%}
 
 cond -> %cond _ ( "entity" __ selector ) {%
   data => ({
@@ -71,22 +97,22 @@ cond -> %cond _ ( "entity" __ selector ) {%
   })
 %}
 
-pos -> 1pos __ 1pos __ 1pos {%
+pos -> coord __ coord __ coord {%
   data => ({
     type: "pos",
     rays: false,
     coords: [data[0], data[2], data[4]]
   })
-%} | 1raypos __ 1raypos __ 1raypos {%
+%} | raycoord __ raycoord __ raycoord {%
   data => ({
     type: "pos",
     rays: true,
     coords: [data[0], data[2], data[4]]
   })
 %}
-1pos -> ( %rel:? num | %rel ) {%
-  data => ({ type: "1pos", relative: !!data[0], ray: false, coord: data[1] ? data[1].content : 0 })
+coord -> ( %rel:? num | %rel ) {%
+  data => ({ type: "coord", relative: !!data[0], ray: false, coord: data[1] ? data[1].content : 0 })
 %}
-1raypos -> %ray num {% data => ({ type: "1pos", relative: false, ray: true, coord: data[1].content }) %}
+raycoord -> %ray num {% data => ({ type: "coord", relative: false, ray: true, coord: data[1].content }) %}
 
 expr -> ( functionExpr | string | selector | nbtVal | cond | pos ) {% id2 %}

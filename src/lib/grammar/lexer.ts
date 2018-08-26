@@ -1,4 +1,4 @@
-import moo from "moo";
+import * as moo from "moo";
 
 const keywords: string[] = [
   "namespace",

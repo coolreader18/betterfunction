@@ -1,21 +1,22 @@
 @{%
-  const concat = data => data.join("")
+  const concat = data => data.join("");
 
-  const concatid = data => concat(id(data))
+  const concatid = data => concat(id(data));
 
   const nuller = () => null;
 
   const nth = i => data => data[i];
-  const id2 =  data => data[0][0]
+  const id2 = data => data[0][0];
 
-  const lexer = require("./lexer").default;
+  import lexer from "./lexer";
 %}
+@preprocessor typescript
 @lexer lexer
 
 innerBlock[INNER] -> _ ( $INNER _ {% data => data[0][0][0] %} ):* {% nth(1) %}
 block[INNER] -> %lb innerBlock[$INNER] %rb {% data => data[1].map(cur => cur[0]) %}
 delim[el, del] -> ( $el ( _ $del _ $el {% nth(3) %} ):* ):? {%
-  data => data[0] ? [data[0][0], ...data[0][1]] : []
+  data => data[0] ? [data[0][0], ...data[0][1]].map(cur=>cur[0]) : []
 %}
 
 
@@ -31,7 +32,7 @@ statementBtfn -> nspStatement | includeStatement # Base level statement
 includeStatement -> %kw_include __ string term {%
 	data => ({
 		type: "includeStatement",
-		include: data[2]
+		path: data[2].content
 	})
 %}
 nspStatement -> %kw_namespace __ ident _ block[statementFolderOrNsp] {%
@@ -80,7 +81,7 @@ callParams -> _ (
 )  _
  {%
   data => {
-    const node = {
+    const node: any = {
       type: "callParams",
       posits: [],
       named: {}
@@ -92,10 +93,10 @@ callParams -> _ (
     return node;
   }
 %}
-funcIdent -> ident ( _ %childOp _ ident ):* {%
+funcIdent -> ident ( _ %childOp _ ident {% data => data[3] %} ):* {%
   data => ({
     type: "funcIdent",
-    path: [data[0], ...data[1].map(cur => cur[3])]
+    path: [data[0], ...data[1]]
   })
 %}
 
@@ -112,13 +113,11 @@ cmt -> %cmt {%
     const match = /^\/\/(.*)$/.exec(data[0].value);
     return {
       type: "comment",
-      content: match[2]
+      content: match![2]
     };
   }
 %}
-ident -> %ident {%
-  data => data[0].value
-%}
+ident -> %ident {% data => data[0].value %}
 # statement terminator
 term -> _ %semi
 

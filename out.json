@@ -14,83 +14,20 @@
               "func": {
                 "type": "funcIdent",
                 "path": [
-                  "if"
+                  "heyo"
                 ]
               },
               "params": {
                 "type": "callParams",
                 "posits": [
-                  [
-                    {
-                      "type": "cond",
-                      "case": "entity",
-                      "args": [
-                        {
-                          "type": "selector",
-                          "target": "e",
-                          "args": {}
-                        }
-                      ]
-                    }
-                  ],
-                  [
-                    {
-                      "type": "function",
-                      "statements": []
-                    }
-                  ],
-                  [
-                    {
-                      "type": "bool",
-                      "content": true
-                    }
-                  ]
+                  {
+                    "type": "bool",
+                    "content": false
+                  }
                 ],
                 "named": {}
               },
               "parens": false
-            },
-            {
-              "type": "callStatement",
-              "func": {
-                "type": "funcIdent",
-                "path": [
-                  "a"
-                ]
-              },
-              "params": {
-                "type": "callParams",
-                "posits": [
-                  [
-                    {
-                      "type": "pos",
-                      "rays": false,
-                      "coords": [
-                        {
-                          "type": "1pos",
-                          "relative": true,
-                          "ray": false,
-                          "coord": 0
-                        },
-                        {
-                          "type": "1pos",
-                          "relative": true,
-                          "ray": false,
-                          "coord": 0
-                        },
-                        {
-                          "type": "1pos",
-                          "relative": true,
-                          "ray": false,
-                          "coord": 0
-                        }
-                      ]
-                    }
-                  ]
-                ],
-                "named": {}
-              },
-              "parens": true
             }
           ],
           "mctag": null

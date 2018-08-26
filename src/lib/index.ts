@@ -1,129 +1,136 @@
-import fs from "fs-extra";
-import nearley from "nearley";
-import path from "path";
-import rules from "./grammar/index.ne";
+import * as fs from "fs-extra";
+import * as nearley from "nearley";
+import * as path from "path";
+import * as rules from "./grammar/index.ne";
+import stdlib, {
+  btfnNamespace,
+  Lib,
+  LibChild,
+  LibFunc,
+  LibType,
+  nsp
+} from "./lib";
+
 const ext = ".btfunction";
 
+const btfnLib: Lib = nsp({});
+console.log(require("./lib"));
+
 export const grammar = nearley.Grammar.fromCompiled(rules);
-export const parse = (input: string) => {
-  const parser = new nearley.Parser(grammar);
-  parser.feed(input);
-  return parser.results[0][0];
-};
 export const load = (file: string, out?: string) => {
   const parser = new nearley.Parser(grammar);
-  let wd;
-  let toLoad;
-  if (fs.lstatSync(file).isDirectory()) {
-    let entry;
-    try {
-      entry =
-        fs.readJSONSync(path.join(file, "pack.mcmeta")).entry || `index${ext}`;
-    } catch (err) {
-      if (err.code != "ENOENT") throw err;
-      throw new Error(
-        "specified file is a directory and the pack.mcmeta file is missing"
-      );
-    }
-    if (!fs.existsSync(path.join(file, entry)))
-      throw new Error(
-        `main field in pack.mcmeta is empty or missing and there is no index${ext} file`
-      );
-    wd = file;
-    toLoad = path.resolve(wd, entry);
-  } else {
-    toLoad = file;
-    wd = path.dirname(file);
-  }
-  const output = out || path.join(wd, "data");
+
+  const { outDir, entry, dir } = getEntryOut(file, out);
   const mctags = { tick: [], load: [] };
   const generated = {};
-  let curnsp;
-  load(toLoad);
 
-  for (let [tag, values] of Object.entries(mctags)) {
-    if (values.length) {
-      let mcfuncpath = path.join(output, "minecraft/tags/functions");
-      fs.mkdirpSync(mcfuncpath);
-      fs.writeJSONSync(path.join(mcfuncpath, `${tag}.json`), { values });
+  parser.feed(fs.readFileSync(entry, "utf8"));
+  const parsed: betterfunction.File = parser.results[0];
+};
+
+export const transform = (content: string) => {
+  const parser = new nearley.Parser(grammar);
+  parser.feed(content);
+  const parsed: betterfunction.File = parser.results[0];
+  fs.writeJSONSync("./out.json", parsed, { spaces: 2 });
+  for (const stmnt of parsed.statements) {
+    switch (stmnt.type) {
+      case "namespaceStatement":
+        transformNamespace(stmnt);
+        break;
     }
   }
-  for (let [nsp, data] of Object.entries(generated)) {
-    folder({ name: "btfngen", data }, [nsp, "functions"]);
-  }
+};
 
-  function load(crfile) {
-    parser.feed(fs.readFileSync(crfile, "utf8"));
-    const parsed = parser.results[0];
-    fs.writeJSONSync(path.resolve(process.cwd(), "out.json"), parsed, {
-      spaces: 2
-    });
-    return;
-    parsed.forEach(stmnt =>
-      ({
-        namespace: () => {
-          curnsp = stmnt.name;
-          fs.emptyDirSync(path.join(output, curnsp, "functions"));
-          folder(Object.assign(stmnt, { name: "functions" }), [curnsp]);
-        },
-        include: () => {
-          let fpath = path.resolve(path.dirname(crfile), stmnt.include);
-          if (path.extname(fpath) == "") {
-            fpath = fpath + ext;
-          }
-          load(fpath);
-        }
-      }[stmnt.type]())
-    );
-  }
-  function folder(data, flpath) {
-    flpath.push(data.name);
-    fs.mkdirpSync(path.join(output, ...flpath));
-    data.data.forEach(statement =>
-      ({
-        function: func => {
-          const handleCommand = com =>
-            ({
-              function: () => {
-                generated[curnsp] = generated[curnsp]
-                  ? generated[curnsp].concat(com)
-                  : [com];
-                com.name = `func${generated[curnsp].length}`;
-                return `function ${curnsp}:btfngen/${com.name}`;
-              },
-              execute: () =>
-                com.text.replace(
-                  /%EXECUTECOMMAND%/,
-                  handleCommand(com.command)
-                ),
-              if: () =>
-                `execute ${com.not ? "unless" : "if"} ${
-                  com.condition
-                } run ${handleCommand({
-                  type: "function",
-                  commands: com.commands
-                })}`,
-              undefined: () => com.text
-            }[com.type]());
-          let fnfile = func.commands.reduce(
-            (str, cur) => str + handleCommand(cur) + "\n",
-            ""
-          );
-          if (func.mctag) {
-            mctags[func.mctag].push(
-              `${curnsp}:${flpath
-                .slice(2)
-                .concat(func.name)
-                .join("/")}`
-            );
-          }
-          fs.writeFileSync(
-            path.join(output, ...flpath, func.name + ".mcfunction"),
-            fnfile
-          );
-        },
-        folder: data => folder(data, flpath)
-      }[statement.type](statement))
-    );
+const transformNamespace = (nsp: betterfunction.NamespaceStatement) => {
+  for (const stmnt of nsp.statements) {
+    switch (stmnt.type) {
+      case "functionStatement":
+        transformFunction(stmnt);
+        break;
+    }
   }
 };
+
+const transformFunction = (func: betterfunction.FunctionStatement) => {
+  for (const stmnt of func.statements) {
+    const valid = validateCall(stmnt);
+    if (!valid) throw new Error("oof");
+    const transformed = transformCall(stmnt);
+    console.log(transformed);
+  }
+};
+
+const validateCall = (call: betterfunction.CallStatement): boolean => {
+  const funcDef = getFuncDef(call.func);
+  if (!funcDef) return false;
+  if (call.params.posits.length !== funcDef.posits.length) return false;
+  const positsValid = call.params.posits.every((posit, i) =>
+    validateTypes(posit.type, funcDef.posits[i])
+  );
+  if (!positsValid) return false;
+  const namedValid = !Object.entries(call.params.named).some(
+    ([key, posit]) =>
+      key in funcDef.named && validateTypes(posit.type, funcDef.named[key])
+  );
+  if (!namedValid) return false;
+  return true;
+};
+const validateTypes = (left: LibType, right: LibType) => left === right;
+
+const transformCall = (call: betterfunction.CallStatement): string | null => {
+  const funcDef = getFuncDef(call.func);
+  if (!funcDef) return null;
+  return funcDef.transform(call.params.posits, call.params.named);
+};
+
+const getFuncDef = ({ path }: betterfunction.FuncIdent): LibFunc | null => {
+  let cur: LibChild = btfnLib;
+  const len = path.length;
+  for (const [child, i] of path.map((cur, i) => [cur, i])) {
+    cur = cur[child];
+    if (
+      !cur ||
+      (cur[btfnNamespace] && i === len - 1) ||
+      (!cur[btfnNamespace] && i < len - 1)
+    ) {
+      return null;
+    }
+  }
+  return cur as LibFunc;
+};
+
+const feedStream = (parser: nearley.Parser, stream: NodeJS.ReadableStream) =>
+  stream.on("data", (data: string) => parser.feed(data));
+
+const getEntryOut = (file: string, outDir?: string) => {
+  file = path.resolve(file);
+  let config: {
+    entry: string;
+    dir: string;
+  };
+  if (fs.statSync(file).isDirectory()) {
+    const packPath = path.join(file, "pack.mcmeta");
+
+    const entry: string =
+      (fs.existsSync(packPath) && fs.readJSONSync(packPath).entry) ||
+      path.join(file, `main${ext}`);
+
+    if (!fs.existsSync(entry)) {
+      throw new Error(`the entry file ${entry} does not exist`);
+    }
+    config = { dir: file, entry };
+  } else {
+    config = {
+      entry: file,
+      dir: path.dirname(file)
+    };
+  }
+  return {
+    outDir:
+      outDir != null ? path.resolve(outDir) : path.join(config.dir, "data"),
+    ...config
+  };
+};
+
+Object.assign(btfnLib, stdlib);

@@ -1,8 +1,5 @@
 namespace a {
   func function {
-    if $entity @e, func {
-
-    }, true;
-    a (~ ~ ~);
+    heyo false;
   }
 }
