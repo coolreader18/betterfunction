@@ -37,7 +37,7 @@ const config = {
     dir: "dist",
     format: "cjs"
   },
-  input: { lib: "./src/lib/index.ts", cli: "./src/cli/index.ts" },
+  input: { lib: "./src/lib/index.ts", cli: "./src/cli/index.ts", plugin:"./src/lib/lib.ts" },
   plugins: [ts, nearleyPlugin()]
 };
 
