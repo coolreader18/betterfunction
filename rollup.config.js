@@ -28,7 +28,7 @@ function nearleyPlugin() {
   };
   return plug;
 }
-const ts = typescript({ rollupCommonJSResolveHack: true });
+const ts = typescript({});
 
 /** @type rollup.InputOptions */
 const config = {
@@ -38,7 +38,8 @@ const config = {
     format: "cjs"
   },
   input: { lib: "./src/lib/index.ts", cli: "./src/cli/index.ts", plugin:"./src/lib/lib.ts" },
-  plugins: [ts, nearleyPlugin()]
+  plugins: [ts, nearleyPlugin()],
+  external: id => /^[^\\/.]/.test(id)
 };
 
 export default config;
