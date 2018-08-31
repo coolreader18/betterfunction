@@ -16,7 +16,14 @@ export type LibType = betterfunction.Expression["type"];
 export type LibFuncType = LibType | LibType[];
 export interface FuncTransformContext {
   genFunc: (content: string) => string;
-  transformCall: (call: betterfunction.CallStatement | string) => string;
+  transformCall: (
+    call: betterfunction.CallStatement | string | SimpleCall
+  ) => string;
+}
+export interface SimpleCall {
+  func: string;
+  posits: betterfunction.Expression[];
+  named: { [k: string]: betterfunction.Expression };
 }
 export interface LibFunc<
   P extends LibFuncType[] = LibFuncType[],
@@ -41,16 +48,3 @@ export const nsp = (nsp: ProtoLib): Lib => ({
 export const fn = <P extends LibFuncType[], N extends { [k: string]: LibType }>(
   func: LibFunc<P, N>
 ) => func;
-
-const stdlib: Lib = nsp({
-  heyo: fn({
-    posits: [["bool", "string"]],
-    named: { a: "bool" },
-    transform: ([first], {}) => {
-      console.log(first);
-      return String(first.content);
-    }
-  })
-});
-
-export default stdlib;

@@ -2,7 +2,7 @@ import * as fs from "fs-extra";
 import * as nearley from "nearley";
 import * as path from "path";
 import * as rules from "./grammar/index.ne";
-import stdlib, {
+import {
   btfnNamespace,
   Lib,
   LibChild,
@@ -12,10 +12,10 @@ import stdlib, {
   FuncTransformContext,
   LibFuncType
 } from "./lib";
+import stdlib from "./stdlib";
+import { transformSimpleCall, getEntryOut } from "./utils";
 
-const ext = ".btfunction";
-
-const btfnLib: Lib = nsp({});
+const btfnLib: Lib = nsp({ ...stdlib });
 
 export const grammar = nearley.Grammar.fromCompiled(rules);
 
@@ -38,19 +38,23 @@ class TransformContext {
     const id = this.gen.push(content);
     return `${this.stack[0]}:btfngen/func${id}`;
   }
-  getFuncCtx() {
+  getFuncCtx(): FuncTransformContext {
     return {
       genFunc: this.genFunc.bind(this),
       transformCall: callInput => {
         let call: betterfunction.CallStatement;
         if (typeof callInput === "string") call = parseCall(callInput);
-        else call = callInput;
+        else if ("type" in callInput) call = callInput;
+        else {
+          call = transformSimpleCall(callInput);
+        }
 
         return transformCall(call, this.getFuncCtx());
       }
     };
   }
 }
+
 export const transform = (content: string) => {
   const parser = new nearley.Parser(grammar);
   parser.feed(content);
@@ -149,39 +153,6 @@ const getFuncDef = ({ path }: betterfunction.FuncIdent): LibFunc | null => {
   return cur as LibFunc;
 };
 
-const feedStream = (parser: nearley.Parser, stream: NodeJS.ReadableStream) =>
-  stream.on("data", (data: string) => parser.feed(data));
-
-const getEntryOut = (file: string, outDir?: string) => {
-  file = path.resolve(file);
-  let config: {
-    entry: string;
-    dir: string;
-  };
-  if (fs.statSync(file).isDirectory()) {
-    const packPath = path.join(file, "pack.mcmeta");
-
-    const entry: string =
-      (fs.existsSync(packPath) && fs.readJSONSync(packPath).entry) ||
-      path.join(file, `main${ext}`);
-
-    if (!fs.existsSync(entry)) {
-      throw new Error(`the entry file ${entry} does not exist`);
-    }
-    config = { dir: file, entry };
-  } else {
-    config = {
-      entry: file,
-      dir: path.dirname(file)
-    };
-  }
-  return {
-    outDir:
-      outDir != null ? path.resolve(outDir) : path.join(config.dir, "data"),
-    ...config
-  };
-};
-
 const callGrammar = nearley.Grammar.fromCompiled({
   ...rules,
   ParserStart: "callStatement"
@@ -192,5 +163,3 @@ const parseCall = (content: string): betterfunction.CallStatement => {
   parser.feed(content);
   return parser.results[0];
 };
-
-Object.assign(btfnLib, stdlib);
