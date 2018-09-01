@@ -13,7 +13,11 @@ export interface Plugin extends ProtoPlugin {
 }
 export type PluginChild = PluginFunc | Plugin;
 export type PluginType = betterfunction.Expression["type"];
-export type PluginFuncType = PluginType | PluginType[];
+export type PluginFuncType = PluginType | PluginType[] | StringEnum;
+export interface StringEnum {
+  type: "string";
+  options: string[];
+}
 export interface FuncTransformContext {
   genFunc: (content: string) => string;
   transformCall: (
@@ -27,30 +31,36 @@ export interface SimpleCall {
 }
 export interface PluginFunc<
   P extends PluginFuncType[] = PluginFuncType[],
-  N extends { [k: string]: PluginType } = { [k: string]: PluginType }
+  N extends { [k: string]: PluginFuncType } = { [k: string]: PluginFuncType }
 > {
   posits: P;
   named: N;
   transform: (
-    posits: {
-      [k in keyof P]: FindFromType<
-        Extract<
-          P[k] extends PluginType[] ? TupleValues<P[k]> : P[k],
-          PluginType
-        >
-      >
-    },
-    named: { [k in keyof N]: FindFromType<N[k]> },
+    posits: { [k in keyof P]: TypeFromFuncType<P[k]> },
+    named: { [k in keyof N]: TypeFromFuncType<N[k]> },
     ctx: FuncTransformContext
   ) => string;
 }
+
+type TypeFromFuncType<T> = T extends PluginFuncType
+  ? T extends StringEnum
+    ? betterfunction.String & { content: TupleValues<T["options"]> }
+    : FindFromType<
+        Extract<T extends PluginType[] ? TupleValues<T> : T, PluginType>
+      >
+  : never;
+
 export const nsp = (nsp: ProtoPlugin): Plugin => ({
   ...nsp,
   [btfnNamespace]: true
 });
 export const fn = <
   P extends PluginFuncType[],
-  N extends { [k: string]: PluginType }
+  N extends { [k: string]: PluginFuncType }
 >(
   func: PluginFunc<P, N>
 ) => func;
+export const strEnum = (...options: string[]): StringEnum => ({
+  type: "string",
+  options
+});

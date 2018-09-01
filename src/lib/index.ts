@@ -100,22 +100,32 @@ const validateCall = (call: betterfunction.CallStatement): boolean => {
   if (!funcDef) return false;
   if (call.params.posits.length !== funcDef.posits.length) return false;
   const positsValid = call.params.posits.every((posit, i) =>
-    validateTypes(posit.type, funcDef.posits[i])
+    validateTypes(posit, funcDef.posits[i])
   );
   if (!positsValid) return false;
   const namedValid = !Object.entries(call.params.named).some(
     ([key, posit]) =>
-      key in funcDef.named && validateTypes(posit.type, funcDef.named[key])
+      key in funcDef.named && validateTypes(posit, funcDef.named[key])
   );
   if (!namedValid) return false;
   return true;
 };
 const validateTypes = (
-  userType: PluginType,
+  expr: betterfunction.Expression,
   funcType: PluginFuncType
 ): boolean => {
+  const userType = expr.type;
   if (Array.isArray(funcType)) {
     return funcType.includes(userType);
+  } else if (typeof funcType === "object") {
+    switch (funcType.type) {
+      case "string":
+        return (
+          expr.type === "string" && funcType.options.includes(expr.content)
+        );
+      default:
+        return false;
+    }
   } else {
     return userType === funcType;
   }
