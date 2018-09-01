@@ -5,6 +5,7 @@ import rawGrammar from "nearley/lib/nearley-language-bootstrapped";
 import path from "path";
 import rollup from "rollup";
 import typescript from "rollup-plugin-typescript2";
+const builtinModules = new Set(require("module").builtinModules);
 
 const nearleyGrammar = nearley.Grammar.fromCompiled(rawGrammar);
 function nearleyPlugin() {
@@ -37,9 +38,24 @@ const config = {
     dir: "dist",
     format: "cjs"
   },
-  input: { lib: "./src/lib/index.ts", cli: "./src/cli/index.ts", plugin:"./src/lib/lib.ts" },
+  input: {
+    lib: "./src/lib/index.ts",
+    cli: "./src/cli/index.ts",
+    plugin: "./src/lib/lib.ts"
+  },
   plugins: [ts, nearleyPlugin()],
-  external: id => /^[^\\/.]/.test(id)
+  external: (id, parent) => {
+    try {
+      return (
+        builtinModules.has(id) ||
+        require.resolve
+          .call({ filename: parent }, id)
+          .startsWith(path.resolve("node_modules"))
+      );
+    } catch (e) {
+      return false;
+    }
+  }
 };
 
 export default config;
