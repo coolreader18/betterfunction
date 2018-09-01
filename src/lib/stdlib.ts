@@ -1,4 +1,4 @@
-import { nsp, fn } from "./lib";
+import { nsp, fn } from "./plugin";
 
 const stdlib = nsp({
   heyo: fn({

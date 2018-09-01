@@ -1,4 +1,4 @@
-import { SimpleCall } from "./lib";
+import { SimpleCall } from "./plugin";
 import * as path from "path";
 import * as fs from "fs-extra";
 
@@ -56,3 +56,13 @@ export const getEntryOut = (file: string, outDir?: string) => {
 };
 
 export const ext = ".btfunction";
+
+export class TransformContext {
+  mctags: { tick: string[][]; load: string[][] } = { tick: [], load: [] };
+  gen: string[] = [];
+  stack: string[] = [];
+  genFunc(content: string) {
+    const id = this.gen.push(content);
+    return `${this.stack[0]}:btfngen/func${id}`;
+  }
+}

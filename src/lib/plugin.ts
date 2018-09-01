@@ -1,19 +1,19 @@
-type FindFromType<T extends LibType> = Extract<
+type FindFromType<T extends PluginType> = Extract<
   betterfunction.Expression,
   { type: T }
 >;
 type TupleValues<T extends any[]> = T extends Array<infer U> ? U : never;
 
 export const btfnNamespace: unique symbol = Symbol("namespace");
-interface ProtoLib {
-  [k: string]: LibChild;
+interface ProtoPlugin {
+  [k: string]: PluginChild;
 }
-export interface Lib extends ProtoLib {
+export interface Plugin extends ProtoPlugin {
   [btfnNamespace]: true;
 }
-export type LibChild = LibFunc | Lib;
-export type LibType = betterfunction.Expression["type"];
-export type LibFuncType = LibType | LibType[];
+export type PluginChild = PluginFunc | Plugin;
+export type PluginType = betterfunction.Expression["type"];
+export type PluginFuncType = PluginType | PluginType[];
 export interface FuncTransformContext {
   genFunc: (content: string) => string;
   transformCall: (
@@ -25,26 +25,32 @@ export interface SimpleCall {
   posits: betterfunction.Expression[];
   named: { [k: string]: betterfunction.Expression };
 }
-export interface LibFunc<
-  P extends LibFuncType[] = LibFuncType[],
-  N extends { [k: string]: LibType } = { [k: string]: LibType }
+export interface PluginFunc<
+  P extends PluginFuncType[] = PluginFuncType[],
+  N extends { [k: string]: PluginType } = { [k: string]: PluginType }
 > {
   posits: P;
   named: N;
   transform: (
     posits: {
       [k in keyof P]: FindFromType<
-        Extract<P[k] extends LibType[] ? TupleValues<P[k]> : P[k], LibType>
+        Extract<
+          P[k] extends PluginType[] ? TupleValues<P[k]> : P[k],
+          PluginType
+        >
       >
     },
     named: { [k in keyof N]: FindFromType<N[k]> },
     ctx: FuncTransformContext
   ) => string;
 }
-export const nsp = (nsp: ProtoLib): Lib => ({
+export const nsp = (nsp: ProtoPlugin): Plugin => ({
   ...nsp,
   [btfnNamespace]: true
 });
-export const fn = <P extends LibFuncType[], N extends { [k: string]: LibType }>(
-  func: LibFunc<P, N>
+export const fn = <
+  P extends PluginFuncType[],
+  N extends { [k: string]: PluginType }
+>(
+  func: PluginFunc<P, N>
 ) => func;
