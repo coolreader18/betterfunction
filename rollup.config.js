@@ -29,7 +29,7 @@ function nearleyPlugin() {
   };
   return plug;
 }
-const ts = typescript({});
+const ts = typescript({ useTsconfigDeclarationDir: true });
 
 /** @type rollup.InputOptions */
 const config = {
@@ -41,7 +41,7 @@ const config = {
   input: {
     lib: "./src/lib/index.ts",
     cli: "./src/cli/index.ts",
-    plugin: "./src/lib/lib.ts"
+    plugin: "./src/lib/plugin.ts"
   },
   plugins: [ts, nearleyPlugin()],
   external: (id, parent) => {
