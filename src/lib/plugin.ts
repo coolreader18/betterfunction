@@ -39,7 +39,7 @@ export interface PluginFunc<
   named: N;
   transform: (
     posits: MapTypes<P>,
-    named: MapTypes<N>,
+    named: Partial<MapTypes<N>>,
     ctx: FuncTransformContext
   ) => string;
 }
@@ -71,17 +71,28 @@ export const strEnum = <O extends string>(...options: O[]): StringEnum<O> => ({
 });
 export const toStr = (
   strs: TemplateStringsArray | betterfunction.Expression,
-  ...exprs: Array<betterfunction.Expression | string>
+  ...exprs: Array<betterfunction.Expression | string | undefined | boolean>
 ) => {
   if ("raw" in strs) {
     return strs.reduce((prev, cur, i) => {
       const expr = exprs[i - 1];
-      return `${prev}${typeof expr === "string" ? expr : _toStr(expr)}${cur}`;
+      let str = "";
+
+      if (typeof expr === "string") str = expr;
+      else if (typeof expr === "object") str = _toStr(expr);
+
+      return `${prev}${str}${cur}`;
     });
   }
   return _toStr(strs);
 };
 export const p = <T extends PluginFuncType[]>(...a: T) => a;
+export const mkString = <S extends string>(
+  content: S
+): betterfunction.String<S> => ({
+  type: "string",
+  content
+});
 export const tagId: ["tag", "id"] = ["tag", "id"];
 
 const _toStr = (expr: betterfunction.Expression) => {

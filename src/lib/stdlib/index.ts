@@ -1,5 +1,4 @@
-import { fn, nsp, p, strEnum, tagId, toStr } from "../plugin";
-import { Err, ErrType } from "../errors";
+import { fn, nsp, p, strEnum, tagId, toStr, mkString } from "../plugin";
 
 const stdlib = nsp({
   advancement: nsp({
@@ -10,9 +9,8 @@ const stdlib = nsp({
       ),
       named: { target: tagId },
       transform: ([sel, { content: criteria }], { target }) =>
-        toStr`advancement grant ${sel} ${criteria} ${
-          criteria !== "everything" ? target : ""
-        }`
+        toStr`advancement grant ${sel} ${criteria} ${criteria !==
+          "everything" && target}`
     }),
     revoke: fn({
       posits: p(
@@ -21,9 +19,8 @@ const stdlib = nsp({
       ),
       named: { target: tagId },
       transform: ([sel, { content: criteria }], { target }) =>
-        toStr`advancement revoke ${sel} ${criteria} ${
-          criteria !== "everything" ? target : ""
-        }`
+        toStr`advancement revoke ${sel} ${criteria} ${criteria !==
+          "everything" && target}`
     })
   }),
   bossbar: nsp({
@@ -89,6 +86,54 @@ const stdlib = nsp({
           })
           .join("\n")
     })
+  }),
+  clear: fn({
+    posits: p("selector"),
+    named: { of: tagId, count: "num" },
+    transform: ([target], { of, count }) =>
+      toStr`clear ${target} ${of} ${count}`
+  }),
+  clone: fn({
+    posits: p("pos", "pos", "pos"),
+    named: {
+      maskMode: strEnum("filtered", "masked", "replace"),
+      filter: tagId,
+      cloneMode: strEnum("force", "move", "normal")
+    },
+    transform: (
+      [pos0, pos1, pos2],
+      { maskMode = mkString("replace"), filter, cloneMode = mkString("normal") }
+    ) =>
+      toStr`clone ${pos0} ${pos1} ${pos2} ${
+        maskMode.content
+      } ${maskMode.content === "filtered" && filter} ${cloneMode.content}`
+  }),
+  data: nsp({
+    get: nsp({
+      block: fn({
+        posits: p("pos"),
+        named: {},
+        transform: ([pos]) => toStr`data get block ${pos}`
+      }),
+      entity: fn({
+        posits: p("selector"),
+        named: {},
+        transform: ([sel]) => toStr`data get entity ${sel}`
+      })
+    }),
+    merge: nsp({
+      block: fn({
+        posits: p("pos", "obj"),
+        named: {},
+        transform: ([pos, nbt]) => toStr`data merge block ${pos} ${nbt}`
+      }),
+      entity: fn({
+        posits: p("selector", "obj"),
+        named: {},
+        transform: ([sel, nbt]) => toStr`data merge entity ${sel} ${nbt}`
+      })
+    })
+    // TODO: Add data::remove once paths are implemented
   })
 });
 
