@@ -37,6 +37,8 @@ export default moo.compile({
   cond: "$",
   rel: "~",
   ray: "^",
+  slash: "/",
+  hash: "#",
   cmt: { match: /\/\/.*/, lineBreaks: false },
   string: /"[^"\\]*(?:\\.[^"\\]*)*"/,
   nl: { match: /\r?\n/, lineBreaks: true },

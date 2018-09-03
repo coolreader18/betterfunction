@@ -1,5 +1,4 @@
 import { Err, ErrType } from "./errors";
-import { isTemplate } from "./utils";
 
 type FindFromType<T extends PluginType> = Extract<
   betterfunction.Expression,
@@ -17,9 +16,9 @@ export interface Plugin extends ProtoPlugin {
 export type PluginChild = PluginFunc | Plugin;
 export type PluginType = betterfunction.Expression["type"];
 export type PluginFuncType = PluginType | PluginType[] | StringEnum;
-export interface StringEnum {
+export interface StringEnum<O extends string = string> {
   type: "string";
-  options: string[];
+  options: O[];
 }
 export interface FuncTransformContext {
   genFunc: (content: string) => string;
@@ -39,19 +38,22 @@ export interface PluginFunc<
   posits: P;
   named: N;
   transform: (
-    posits: { [k in keyof P]: TypeFromFuncType<P[k]> },
-    named: { [k in keyof N]: TypeFromFuncType<N[k]> },
+    posits: MapTypes<P>,
+    named: MapTypes<N>,
     ctx: FuncTransformContext
   ) => string;
 }
 
-type TypeFromFuncType<T> = T extends PluginFuncType
-  ? T extends StringEnum
-    ? betterfunction.String & { content: TupleValues<T["options"]> }
+type MapTypes<T extends { [k: string]: PluginFuncType } | PluginFuncType[]> = {
+  [k in keyof T]: T[k] extends StringEnum<infer O>
+    ? betterfunction.String<O>
     : FindFromType<
-        Extract<T extends PluginType[] ? TupleValues<T> : T, PluginType>
+        Extract<
+          T[k] extends PluginType[] ? TupleValues<T[k]> : T[k],
+          PluginType
+        >
       >
-  : never;
+};
 
 export const nsp = (nsp: ProtoPlugin): Plugin => ({
   ...nsp,
@@ -63,7 +65,7 @@ export const fn = <
 >(
   func: PluginFunc<P, N>
 ) => func;
-export const strEnum = (...options: string[]): StringEnum => ({
+export const strEnum = <O extends string>(...options: O[]): StringEnum<O> => ({
   type: "string",
   options
 });
@@ -79,6 +81,8 @@ export const toStr = (
   }
   return _toStr(strs);
 };
+export const p = <T extends PluginFuncType[]>(...a: T) => a;
+export const tagId: ["tag", "id"] = ["tag", "id"];
 
 const _toStr = (expr: betterfunction.Expression) => {
   switch (expr.type) {
@@ -90,6 +94,11 @@ const _toStr = (expr: betterfunction.Expression) => {
       return `@${expr.target}[${Object.entries(expr.args)
         .map(([key, val]) => `${key}=${singleSelStr(val)}`)
         .join()}]`;
+    case "tag":
+    case "id":
+      return `${expr.type === "tag" ? "#" : ""}${expr.nsp}:${expr.path.join(
+        "/"
+      )}`;
     default:
       throw new Err(
         ErrType.LIBRARY,
@@ -99,7 +108,6 @@ const _toStr = (expr: betterfunction.Expression) => {
 };
 
 const singleSelStr = (val: betterfunction.ValSelector): string => {
-  console.log(val);
   switch (val.type) {
     case "optional":
       return `${val.not ? "!" : ""}${singleSelStr(val.value)}`;

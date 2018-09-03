@@ -111,4 +111,14 @@ coord -> ( %rel:? num | %rel ) {%
 %}
 raycoord -> %ray num {% data => ({ type: "coord", relative: false, ray: true, coord: data[1].content }) %}
 
-expr -> ( functionExpr | string | selector | nbtVal | cond | pos ) {% id2 %}
+id -> ident %colon delim[ident {% id %}, %slash] {%
+  data => ({
+    type: "id",
+    nsp: data[0],
+    path: data[2]
+  })
+%}
+
+tag -> hash id {% data => ({ ...data[1], type: "tag" }) %}
+
+expr -> ( functionExpr | selector | nbtVal | cond | pos | id | tag ) {% id2 %}

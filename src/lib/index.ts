@@ -117,7 +117,6 @@ const validateTypes = (
   funcType: PluginFuncType,
   path: string[]
 ): boolean => {
-  console.log(funcType);
   const userType = expr.type;
   if (Array.isArray(funcType)) {
     return funcType.some(cur => validateTypes(expr, cur, path));

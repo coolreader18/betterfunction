@@ -45,11 +45,19 @@ declare namespace betterfunction {
     named: { [k: string]: Expression };
   }
 
-  type Expression = String | Function | Selector | NbtVal | Cond | Pos;
+  type Expression =
+    | String
+    | Function
+    | Selector
+    | NbtVal
+    | Cond
+    | Pos
+    | Id
+    | Tag;
 
-  interface String {
+  interface String<S extends string = string> {
     type: "string";
-    content: string;
+    content: S;
   }
   interface Function {
     type: "function";
@@ -60,7 +68,14 @@ declare namespace betterfunction {
     target: "a" | "e" | "p" | "r" | "s";
     args: { [k: string]: ValSelector };
   }
-  export type ValSelector = NbtVal | Map | Range | Optional<String> | String; // | IdOrTag once implemented properly
+  export type ValSelector =
+    | NbtVal
+    | Map
+    | Range
+    | Optional<String | Id | Tag>
+    | String
+    | Id
+    | Tag;
   interface Optional<T> {
     type: "optional";
     not: boolean;
@@ -107,5 +122,15 @@ declare namespace betterfunction {
     relative: boolean;
     ray: boolean;
     coord: number;
+  }
+  interface Id {
+    type: "id";
+    nsp: string;
+    path: string[];
+  }
+  interface Tag {
+    type: "tag";
+    nsp: string;
+    path: string[];
   }
 }
