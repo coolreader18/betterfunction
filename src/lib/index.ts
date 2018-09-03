@@ -41,7 +41,7 @@ export const transform = (content: string) => {
         ctx.stack.push(stmnt.name);
         const nsp = transformNamespace(stmnt, ctx);
         ctx.stack.pop();
-        console.log(nsp);
+        console.log(nsp.function);
         break;
     }
   }

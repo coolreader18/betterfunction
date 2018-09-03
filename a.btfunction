@@ -1,5 +1,5 @@
 namespace a {
   func function {
-    advancement::grant @a, "everything";
+    bossbar::set a:a, visible: false, color: "green";
   }
 }
