@@ -13,7 +13,7 @@ interface ProtoPlugin {
 export interface Plugin extends ProtoPlugin {
   [btfnNamespace]: true;
 }
-export type PluginChild = PluginFunc | Plugin;
+export type PluginChild = PluginFunc | Plugin | string;
 export type PluginType = betterfunction.Expression["type"];
 export type PluginFuncType = PluginType | PluginType[] | StringEnum;
 export interface StringEnum<O extends string = string> {
@@ -94,6 +94,7 @@ export const mkString = <S extends string>(
   content
 });
 export const tagId: ["tag", "id"] = ["tag", "id"];
+export * from "./mc-data";
 
 const _toStr = (expr: betterfunction.Expression) => {
   switch (expr.type) {

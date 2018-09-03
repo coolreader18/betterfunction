@@ -155,7 +155,14 @@ const getFuncDef = ({ path }: betterfunction.FuncIdent): PluginFunc | null => {
       return null;
     }
   }
-  return cur as PluginFunc;
+
+  return typeof cur === "string"
+    ? {
+        posits: [],
+        named: {},
+        transform: () => cur as string
+      }
+    : (cur as PluginFunc);
 };
 
 const callGrammar = nearley.Grammar.fromCompiled({

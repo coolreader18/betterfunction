@@ -1,5 +1,6 @@
 namespace a {
   func function {
     bossbar::set a:a, visible: false, color: "green";
+    debug::start;
   }
 }
