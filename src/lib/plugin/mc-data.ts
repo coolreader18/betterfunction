@@ -1,4 +1,4 @@
-import { strEnum } from "./plugin";
+import { strEnum } from "./utils";
 
 export const gamemode = strEnum(
   "adventure",

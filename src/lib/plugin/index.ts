@@ -1,4 +1,4 @@
-import { Err, ErrType } from "./errors";
+import { Err, ErrType } from "../errors";
 
 type FindFromType<T extends PluginType> = Extract<
   betterfunction.Expression,
@@ -7,11 +7,9 @@ type FindFromType<T extends PluginType> = Extract<
 type TupleValues<T extends any[]> = T extends Array<infer U> ? U : never;
 
 export const btfnNamespace: unique symbol = Symbol("namespace");
-interface ProtoPlugin {
-  [k: string]: PluginChild;
-}
-export interface Plugin extends ProtoPlugin {
+export interface Plugin {
   [btfnNamespace]: true;
+  [k: string]: PluginChild;
 }
 export type PluginChild = PluginFunc | Plugin | string;
 export type PluginType = betterfunction.Expression["type"];
@@ -21,7 +19,7 @@ export interface StringEnum<O extends string = string> {
   options: O[];
 }
 export interface FuncTransformContext {
-  genFunc: (content: string) => string;
+  genFunc: (content: string | betterfunction.Function) => string;
   transformCall: (
     call: betterfunction.CallStatement | string | SimpleCall
   ) => string;
@@ -54,21 +52,6 @@ type MapTypes<T extends { [k: string]: PluginFuncType } | PluginFuncType[]> = {
         >
       >
 };
-
-export const nsp = (nsp: ProtoPlugin): Plugin => ({
-  ...nsp,
-  [btfnNamespace]: true
-});
-export const fn = <
-  P extends PluginFuncType[],
-  N extends { [k: string]: PluginFuncType }
->(
-  func: PluginFunc<P, N>
-) => func;
-export const strEnum = <O extends string>(...options: O[]): StringEnum<O> => ({
-  type: "string",
-  options
-});
 export const toStr = (
   strs: TemplateStringsArray | betterfunction.Expression,
   ...exprs: Array<betterfunction.Expression | string | undefined | boolean>
@@ -86,15 +69,13 @@ export const toStr = (
   }
   return _toStr(strs);
 };
-export const p = <T extends PluginFuncType[]>(...a: T) => a;
-export const mkString = <S extends string>(
-  content: S
-): betterfunction.String<S> => ({
-  type: "string",
-  content
-});
+export const funcToCmd = (
+  func: betterfunction.Function,
+  ctx: FuncTransformContext
+): string => toStr`function ${ctx.genFunc(func.statements.join("\n"))}`;
 export const tagId: ["tag", "id"] = ["tag", "id"];
 export * from "./mc-data";
+export * from "./utils";
 
 const _toStr = (expr: betterfunction.Expression) => {
   switch (expr.type) {

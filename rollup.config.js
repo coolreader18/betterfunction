@@ -41,7 +41,7 @@ const config = {
   input: {
     lib: "./src/lib/index.ts",
     cli: "./src/cli/index.ts",
-    plugin: "./src/lib/plugin.ts"
+    plugin: "./src/lib/plugin/index.ts"
   },
   plugins: [ts, nearleyPlugin()],
   external: (id, parent) => {

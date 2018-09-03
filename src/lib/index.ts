@@ -9,7 +9,8 @@ import {
   PluginFunc,
   nsp,
   FuncTransformContext,
-  PluginFuncType
+  PluginFuncType,
+  toStr
 } from "./plugin";
 import stdlib from "./stdlib";
 import { transformSimpleCall, getEntryOut, TransformContext } from "./utils";
@@ -84,7 +85,19 @@ const transformFunction = (
   return cmds.join("\n");
 };
 const funcTransCtx = (ctx: TransformContext): FuncTransformContext => ({
-  genFunc: content => ctx.genFunc(content),
+  genFunc: content =>
+    ctx.genFunc(
+      typeof content === "object"
+        ? content.statements
+            .map(call => {
+              ctx.stack.push("inline_function");
+              const out = transformCall(call, funcTransCtx(ctx));
+              ctx.stack.pop();
+              return out;
+            })
+            .join("\n")
+        : content
+    ),
   transformCall: callInput => {
     let call: betterfunction.CallStatement;
     if (typeof callInput === "string") call = parseCall(callInput);

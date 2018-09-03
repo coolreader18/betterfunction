@@ -1,19 +1,11 @@
-import {
-  fn,
-  nsp,
-  p,
-  strEnum,
-  tagId,
-  toStr,
-  mkString,
-  gamemode,
-  difficulty
-} from "../plugin";
+import { nsp } from "../plugin";
 
 import mcCommands from "./mc-commands";
+import btfnStd from "./btfn-std";
 
 const stdlib = nsp({
-  ...mcCommands
+  ...mcCommands,
+  ...btfnStd
 });
 
 export default stdlib;
