@@ -60,16 +60,20 @@ declare namespace betterfunction {
     target: "a" | "e" | "p" | "r" | "s";
     args: { [k: string]: ValSelector };
   }
-  type ValSelector = NbtVal | Optional<String>; // | IdOrTag once implemented properly
-  const _s: unique symbol;
-  interface Optional<T = typeof _s> {
+  export type ValSelector = NbtVal | Map | Range | Optional<String> | String; // | IdOrTag once implemented properly
+  interface Optional<T> {
     type: "optional";
     not: boolean;
-    value: T extends typeof _s ? Expression : T;
+    value: T;
   }
   interface Map {
     type: "map";
     data: { [k: string]: ValSelector };
+  }
+  interface Range {
+    type: "range";
+    start: number | null;
+    end: number | null;
   }
   type NbtVal = Obj | Num | Bool | List;
   interface Obj {

@@ -1,13 +1,12 @@
-import { nsp, fn } from "./plugin";
+import { nsp, fn, toStr } from "./plugin";
 
 const stdlib = nsp({
-  heyo: fn({
-    posits: [["bool", "string"]],
-    named: { a: "bool" },
-    transform: ([first], {}) => {
-      console.log(first);
-      return String(first.content);
-    }
+  advancement: nsp({
+    grant: fn({
+      posits: ["selector"],
+      named: {},
+      transform: ([sel]) => toStr`advancement grant ${sel}`
+    })
   })
 });
 

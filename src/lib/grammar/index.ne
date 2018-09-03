@@ -13,15 +13,15 @@
 @preprocessor typescript
 @lexer lexer
 
-innerBlock[INNER] -> _ ( $INNER _ {% data => data[0][0][0] %} ):* {% nth(1) %}
-block[INNER] -> %lb innerBlock[$INNER] %rb {% data => data[1].map(cur => cur[0]) %}
+innerBlock[INNER] -> _ ( $INNER _ {% data => data[0][0] %} ):* {% nth(1) %}
+block[INNER] -> %lb innerBlock[$INNER {% id %}] %rb {% data => data[1] %}
 delim[el, del] -> ( $el ( _ $del _ $el {% nth(3) %} ):* ):? {%
-  data => data[0] ? [data[0][0], ...data[0][1]].map(cur=>cur[0]) : []
+  data => data[0] ? [data[0][0], ...data[0][1]] : []
 %}
 
 
 
-betterfunction -> innerBlock[statementBtfn] {%
+betterfunction -> innerBlock[statementBtfn {% id %}] {%
   data => ({
     type: "file",
     statements: data[0]
@@ -35,7 +35,7 @@ includeStatement -> %kw_include __ string term {%
 		path: data[2].content
 	})
 %}
-nspStatement -> %kw_namespace __ ident _ block[statementFolderOrNsp] {%
+nspStatement -> %kw_namespace __ ident _ block[statementFolderOrNsp {% id %}] {%
 	data => ({
     type: "namespaceStatement",
     name: data[2],
@@ -44,14 +44,14 @@ nspStatement -> %kw_namespace __ ident _ block[statementFolderOrNsp] {%
 %}
 
 statementFolderOrNsp -> functionStatement | folderStatement
-folderStatement -> %kw_folder __ ident _ block[statementFolderOrNsp] {%
+folderStatement -> %kw_folder __ ident _ block[statementFolderOrNsp {% id %}] {%
 	data => ({
 		type: "folderStatement",
 		name: data[2],
 		statements: data[4]
 	})
 %}
-functionBlock -> block[statementFunction] {% id %}
+functionBlock -> block[statementFunction {% id %}] {% id %}
 functionStatement ->  ( ( %kw_tick | %kw_load ) __ ):? %kw_func __ ident _ functionBlock {%
 	data => ({
     type: "functionStatement",
@@ -74,10 +74,10 @@ callStatement -> funcIdent _ (
 %}
 namedParam -> ident _ %colon _ expr {% data => [data[0], data[4]] %}
 callParams -> _ (
-  delim[expr, %comma] ( _ %comma _ delim[namedParam, %comma] {% nth(3) %} ):? {%
+  delim[expr {% id %}, %comma] ( _ %comma _ delim[namedParam {% id %}, %comma] {% nth(3) %} ):? {%
     data => ({ posits: data[0], named: data[1] }) 
   %} |
-  delim[nameParam, %comma]:? {% data => ({ named: data[0] }) %}
+  delim[nameParam {% id %}, %comma]:? {% data => ({ named: data[0] }) %}
 )  _
  {%
   data => {

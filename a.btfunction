@@ -1,5 +1,5 @@
 namespace a {
   func function {
-    heyo false;
+    advancement::grant @e[a=!b];
   }
 }

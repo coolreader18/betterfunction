@@ -1,3 +1,6 @@
+import { Err, ErrType } from "./errors";
+import { isTemplate } from "./utils";
+
 type FindFromType<T extends PluginType> = Extract<
   betterfunction.Expression,
   { type: T }
@@ -64,3 +67,51 @@ export const strEnum = (...options: string[]): StringEnum => ({
   type: "string",
   options
 });
+export const toStr = (
+  strs: TemplateStringsArray | betterfunction.Expression,
+  ...exprs: Array<betterfunction.Expression | string>
+) => {
+  if ("raw" in strs) {
+    return strs.reduce((prev, cur, i) => {
+      const expr = exprs[i - 1];
+      return `${prev}${typeof expr === "string" ? expr : _toStr(expr)}${cur}`;
+    });
+  }
+  return _toStr(strs);
+};
+
+const _toStr = (expr: betterfunction.Expression) => {
+  switch (expr.type) {
+    case "bool":
+    case "num":
+    case "string":
+      return JSON.stringify(expr.content);
+    case "selector":
+      return `@${expr.target}[${Object.entries(expr.args)
+        .map(([key, val]) => `${key}=${singleSelStr(val)}`)
+        .join()}]`;
+    default:
+      throw new Err(
+        ErrType.LIBRARY,
+        `Expression of type ${expr.type} cannot be converted into a string`
+      );
+  }
+};
+
+const singleSelStr = (val: betterfunction.ValSelector): string => {
+  console.log(val);
+  switch (val.type) {
+    case "optional":
+      return `${val.not ? "!" : ""}${singleSelStr(val.value)}`;
+    case "range":
+      const start = val.start === null ? "" : val.start;
+      const end = val.end === null ? "" : val.end;
+      return `${start}..${end}`;
+    case "map":
+      return `{${Object.entries(val.data)
+        .map(([key, val]) => `${key}=${singleSelStr(val)}`)
+        .join()}}`;
+    default:
+      return toStr(val);
+  }
+};

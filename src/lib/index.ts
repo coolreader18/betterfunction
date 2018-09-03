@@ -7,13 +7,13 @@ import {
   Plugin,
   PluginChild,
   PluginFunc,
-  PluginType,
   nsp,
   FuncTransformContext,
   PluginFuncType
 } from "./plugin";
 import stdlib from "./stdlib";
 import { transformSimpleCall, getEntryOut, TransformContext } from "./utils";
+import { Err, ErrType } from "./errors";
 
 const btfnLib: Plugin = nsp({ ...stdlib });
 
@@ -39,8 +39,9 @@ export const transform = (content: string) => {
     switch (stmnt.type) {
       case "namespaceStatement":
         ctx.stack.push(stmnt.name);
-        transformNamespace(stmnt, ctx);
+        const nsp = transformNamespace(stmnt, ctx);
         ctx.stack.pop();
+        console.log(nsp);
         break;
     }
   }
@@ -91,44 +92,49 @@ const funcTransCtx = (ctx: TransformContext): FuncTransformContext => ({
     else {
       call = transformSimpleCall(callInput);
     }
-    return transformCall(call, this.getFuncCtx());
+    return transformCall(call, funcTransCtx(ctx));
   }
 });
 
-const validateCall = (call: betterfunction.CallStatement): boolean => {
-  const funcDef = getFuncDef(call.func);
+const validateCall = ({ params, func }: betterfunction.CallStatement) => {
+  const funcDef = getFuncDef(func);
   if (!funcDef) return false;
-  if (call.params.posits.length !== funcDef.posits.length) return false;
-  const positsValid = call.params.posits.every((posit, i) =>
-    validateTypes(posit, funcDef.posits[i])
+  if (params.posits.length !== funcDef.posits.length) return false;
+  const positsValid = params.posits.every((posit, i) =>
+    validateTypes(posit, funcDef.posits[i], func.path)
   );
   if (!positsValid) return false;
-  const namedValid = !Object.entries(call.params.named).some(
+  const namedValid = Object.entries(params.named).every(
     ([key, posit]) =>
-      key in funcDef.named && validateTypes(posit, funcDef.named[key])
+      key in funcDef.named &&
+      validateTypes(posit, funcDef.named[key], func.path)
   );
   if (!namedValid) return false;
   return true;
 };
 const validateTypes = (
   expr: betterfunction.Expression,
-  funcType: PluginFuncType
+  funcType: PluginFuncType,
+  path: string[]
 ): boolean => {
+  console.log(funcType);
   const userType = expr.type;
   if (Array.isArray(funcType)) {
-    return funcType.includes(userType);
+    return funcType.some(cur => validateTypes(expr, cur, path));
   } else if (typeof funcType === "object") {
     switch (funcType.type) {
       case "string":
         return (
           expr.type === "string" && funcType.options.includes(expr.content)
         );
-      default:
-        return false;
     }
-  } else {
+  } else if (typeof funcType === "string") {
     return userType === funcType;
   }
+  throw new Err(
+    ErrType.LIBRARY,
+    `Invalid Type for function definition of ${path.join("::")}`
+  );
 };
 
 const transformCall = (

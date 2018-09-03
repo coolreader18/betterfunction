@@ -66,3 +66,7 @@ export class TransformContext {
     return `${this.stack[0]}:btfngen/func${id}`;
   }
 }
+
+export const isTemplate = (
+  arr: any[]
+): arr is [TemplateStringsArray, ...any[]] => "raw" in arr[0];

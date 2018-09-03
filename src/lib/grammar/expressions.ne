@@ -1,9 +1,7 @@
 @lexer lexer
 
-innerBlock[INNER] -> _ ( $INNER _ {% data => data[0][0][0] %} ):* {% nth(1) %}
-block[INNER] -> %lb innerBlock[$INNER] %rb {% data => data[1].map(cur => cur[0]) %}
 delim[el, del] -> ( $el ( _ $del _ $el {% nth(3) %} ):* ):? {%
-  data => data[0] ? [data[0][0], ...data[0][1]].map(cur=>cur[0]) : []
+  data => data[0] ? [data[0][0], ...data[0][1]] : []
 %}
 optional[el] -> %not:? _ $el {%
   data => ({
@@ -20,7 +18,7 @@ functionExpr -> %kw_func _ functionBlock {%
   })
 %}
 
-selec[ld, rd] -> $ld _ delim[singleSelector, %comma] _ $rd {%
+selec[ld, rd] -> $ld _ delim[singleSelector {% id %}, %comma] _ $rd {%
   data => data[2].reduce((obj,[key,val])=>(obj[key]=val,obj),{})
 %}
 selector -> %sel selec[%ls, %rs]:? {%
@@ -30,16 +28,14 @@ selector -> %sel selec[%ls, %rs]:? {%
     args: data[1] || {}
   })
 %}
-singleSelectorOptional -> (
+singleSelectorOptional ->
     ident {% data => ({ type: "string", content: data[0] }) %}
-  | string
+  | string {% id %}
   | null {% () => ({ type: "string", content: "" }) %}
-  | idOrTag
-) {% id2 %}
+  | idOrTag {% id %}
 singleSelector -> ident _ %eq _ (
     nbtVal {% id %}
-  | optional[singleSelectorOptional]
-  | %not _ idOrTag
+  | optional[singleSelectorOptional {% id %}] {% id %}
   | selec[%rb, %lb] {%
     data => ({
       type: "map",
@@ -48,7 +44,7 @@ singleSelector -> ident _ %eq _ (
   %}
   | ( num %range num? | %range num ) {%
     data => {
-      const node = { type: "first", start: null, end: null };
+      const node = { type: "range", start: null, end: null };
       if (data[0][0].type === "num") {
         node.start = data[0][0];
         node.end = data[0][2];
@@ -64,7 +60,7 @@ singleSelector -> ident _ %eq _ (
 
 nbtVal -> ( num | obj | string | list | bool ) {% id2 %}
 objField -> ( ident | string ) _ %colon _ nbtVal {% data => [data[0][0], data[4]] %}
-obj -> %lb delim[objField, %comma] %rb {%
+obj -> %lb delim[objField {% id %}, %comma] %rb {%
   data => ({
     type: "obj",
     data: data[1].reduce((obj,[key,val])=>(obj[key]=val,obj),{})
@@ -82,7 +78,7 @@ bool -> ( %kw_true | %kw_false ) {%
     content: JSON.parse(data[0][0])
   })
 %}
-list -> %ls _ delim[nbtVal, %comma] _ %rs {%
+list -> %ls _ delim[nbtVal {% id %}, %comma] _ %rs {%
   data => ({
     type: "list",
     data: data[2]
