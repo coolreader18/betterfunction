@@ -1,1 +1,1 @@
-export * from "./src/lib/lib";
+export * from "./types/lib/plugin";
