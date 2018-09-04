@@ -77,21 +77,13 @@ callParams -> _ (
   delim[expr {% id %}, %comma] ( _ %comma _ delim[namedParam {% id %}, %comma] {% nth(3) %} ):? {%
     data => ({ posits: data[0], named: data[1] }) 
   %} |
-  delim[nameParam {% id %}, %comma]:? {% data => ({ named: data[0] }) %}
-)  _
- {%
-  data => {
-    const node: any = {
-      type: "callParams",
-      posits: [],
-      named: {}
-    };
-
-    if (data[1].posits) node.posits.splice(-1, 0, ...data[1].posits);
-    if (data[1].named) data[1].named.forEach(([key, val]) => node.named[key] = val);
-
-    return node;
-  }
+  delim[namedParam {% id %}, %comma]:? {% data => ({ named: data[0] }) %}
+)  _ {%
+  data => ({
+    type: "callParams",
+    posits: data[1].posits || [],
+    named: (data[1].named || []).reduce((o,[k,v])=>(o[k]=v,o), {})
+  })
 %}
 funcIdent -> ident ( _ %childOp _ ident {% data => data[3] %} ):* {%
   data => ({

@@ -119,6 +119,6 @@ id -> ident %colon delim[ident {% id %}, %slash] {%
   })
 %}
 
-tag -> hash id {% data => ({ ...data[1], type: "tag" }) %}
+tag -> %hash id {% data => ({ ...data[1], type: "tag" }) %}
 
 expr -> ( functionExpr | selector | nbtVal | cond | pos | id | tag ) {% id2 %}

@@ -8,5 +8,5 @@
     "declaration": true,
     "declarationDir": "types"
   },
-  "exclude": ["./plugin.d.ts"]
+  "exclude": ["./plugin.d.ts", "./types"]
 }
