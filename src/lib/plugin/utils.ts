@@ -1,11 +1,5 @@
-import {
-  Plugin,
-  btfnNamespace,
-  PluginFuncType,
-  PluginFunc,
-  StringEnum,
-  PluginChild
-} from ".";
+import { Plugin, PluginFuncType, PluginFunc, StringEnum, PluginChild } from ".";
+import { btfnNamespace } from "./btfn-namespace";
 
 export const nsp = (nsp: { [k: string]: PluginChild }): Plugin => ({
   ...nsp,

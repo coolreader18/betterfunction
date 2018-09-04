@@ -1,4 +1,5 @@
 import { Err, ErrType } from "../errors";
+import { btfnNamespace } from "./btfn-namespace";
 
 type FindFromType<T extends PluginType> = Extract<
   betterfunction.Expression,
@@ -6,7 +7,7 @@ type FindFromType<T extends PluginType> = Extract<
 >;
 type TupleValues<T extends any[]> = T extends Array<infer U> ? U : never;
 
-export const btfnNamespace: unique symbol = Symbol("namespace");
+export { btfnNamespace };
 export interface Plugin {
   [btfnNamespace]: true;
   [k: string]: PluginChild;
