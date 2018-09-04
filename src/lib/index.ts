@@ -13,7 +13,7 @@ import {
   toStr
 } from "./plugin";
 import stdlib from "./stdlib";
-import { transformSimpleCall, getEntryOut, TransformContext } from "./utils";
+import { simpleCall, getEntryOut, TransformContext } from "./utils";
 import { Err, ErrType } from "./errors";
 
 const btfnLib: Plugin = nsp({ ...stdlib });
@@ -103,7 +103,7 @@ const funcTransCtx = (ctx: TransformContext): FuncTransformContext => ({
     if (typeof callInput === "string") call = parseCall(callInput);
     else if ("type" in callInput) call = callInput;
     else {
-      call = transformSimpleCall(callInput);
+      call = simpleCall(callInput);
     }
     return transformCall(call, funcTransCtx(ctx));
   }
