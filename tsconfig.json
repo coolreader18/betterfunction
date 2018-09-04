@@ -7,5 +7,6 @@
     "moduleResolution": "node",
     "declaration": true,
     "declarationDir": "types"
-  }
+  },
+  "exclude": ["./plugin.d.ts"]
 }
