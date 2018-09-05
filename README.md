@@ -1,6 +1,6 @@
 # betterfunction
 
-A preprocessor/alternate language for Minecraft mcfunction files.
+An alternate language for Minecraft functions.
 
 ## What can you do with it?
 
