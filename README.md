@@ -1,33 +1,30 @@
 # betterfunction
 
-A preprocessor for Minecraft mcfunction files.
+A preprocessor/alternate language for Minecraft mcfunction files.
 
 ## What can you do with it?
 
 ```
-namespace thenamespace {
-  tick function clock {
-    # will run every tick
+namespace example_project {
+  tick func clock { // will run every tick
 
-    if not entity @e[tag=target] {
-      # easy if statements
+    if ?not entity @e[tag=target], func {// easy if
 
-      say Doesn't exist!
+      say "Target doesn't exist!";
 
-      # runat is an alias for `run execute at @s run`
-      execute as @e[tag=other] runat function {
-        # functions in the function command!
+      // runat is an alias for `run execute at @s run`
+      execute func {
+        // inline functions!
         tp ~ ~1 ~
-      }
-    }
-
-    // can use `//` for comments
+      }, as: @e[tag=other], run_at: @s;
+    };
+    
   }
   load function load {
     // will run on load
 
     // can leave out `dummy` when creating an objective
-    scoreboard objectives add objectiv
+    scoreboard::objectives::add "objectiv";
   }
 }
 ```
