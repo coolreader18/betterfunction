@@ -36,3 +36,7 @@ You need node and yarn or npm to install, or you grab the binary from /dist, but
 ```sh
 yarn global add https://github.com/coolreader18/betterfunction
 ```
+
+## License
+
+This project is licensed under the MIT license. Please see the [LICENSE](LICENSE) file for more details.
