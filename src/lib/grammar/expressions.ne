@@ -42,7 +42,7 @@ singleSelector -> ident _ %eq _ (
       data: data[0]
     })
   %}
-  | ( num %range num? | %range num ) {%
+  | ( num %range num:? | %range num ) {%
     data => {
       const node = { type: "range", start: null, end: null };
       if (data[0][0].type === "num") {
@@ -121,6 +121,8 @@ id -> ident %colon delim[ident {% id %}, %slash] {%
 
 tag -> %hash id {% data => ({ ...data[1], type: "tag" }) %}
 
+idOrTag -> ( id | tag ) {% id2 %}
+
 cmd -> %cmd _ callParens {%
   data => ({
     type: "cmd",
@@ -128,4 +130,4 @@ cmd -> %cmd _ callParens {%
   })
 %}
 
-expr -> ( functionExpr | selector | nbtVal | cond | pos | id | tag | cmd ) {% id2 %}
+expr -> ( functionExpr | selector | nbtVal | cond | pos | idOrTag | cmd ) {% id2 %}

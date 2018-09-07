@@ -1,6 +1,7 @@
 import compile from "nearley/lib/compile";
 import generate from "nearley/lib/generate";
 import nearley from "nearley/lib/nearley";
+import lint from "nearley/lib/lint";
 import rawGrammar from "nearley/lib/nearley-language-bootstrapped";
 import path from "path";
 import rollup from "rollup";
@@ -22,6 +23,14 @@ function nearleyPlugin() {
         file: id
       });
       Object.defineProperty(process, "stderr", stderr);
+      lint(compilation, {
+        out: {
+          write: str => {
+            str = str.slice(5, -1);
+            this.warn(str);
+          }
+        }
+      });
       const code = generate(compilation, path.basename(id));
       const ret = ts.transform.call(this, code, `${id}.ts`);
       return ret;
