@@ -1,27 +1,6 @@
 
-namespace minibomb {
-  tick function minibomb {
-    execute as @e[type=item,nbt={Item:{tag:{Tags:["minibomb"]}},OnGround:1b},tag=!noExplodeMB] runat function {
-      summon creeper ~ ~1 ~ {ignited:1,ExplosionRadius:1.5,Fuse:1}
-      kill @s
-    }
-    execute as @e[type=item,nbt={Item:{id:"minecraft:gunpowder",Count: 1b}}] runat execute as @e[type=item,nbt={Item:{id:"redstone",Count: 1b}},distance=..1,limit=1,sort=nearest] runat function {
-      summon item ~ ~ ~ {Item:{id:"tnt",Count:1b,tag:{Tags:["minibomb"],HideFlags:1,display:{Name:"MiniBomb",Lore:["Throw to Activate"]},ench:[{id:34,lvl:1}]}},Tags:["noExplodeMB"]}
-      kill @e[type=item,nbt={Item:{id:"minecraft:gunpowder",Count:1b}},distance=..1,limit=1,sort=nearest]
-      kill @s
-    }
-    if entity @e[tag=g] { // comment here
-      say easier if statements # comment here
-    } // comment here
-    # comment here
-    function {
-      say inline function
-    }
-  }
-  folder foo {
-    load function bar {
-      // will say baz when the world loads
-      say baz
-    }
+namespace testing {
+  func test_func {
+    execute;
   }
 }
