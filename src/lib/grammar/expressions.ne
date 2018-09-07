@@ -123,7 +123,7 @@ tag -> %hash id {% data => ({ ...data[1], type: "tag" }) %}
 
 idOrTag -> ( id | tag ) {% id2 %}
 
-cmd -> %cmd _ callParens {%
+cmd -> %slash _ callParens {%
   data => ({
     type: "cmd",
     call: data[1]

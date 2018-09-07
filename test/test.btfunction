@@ -1,7 +1,7 @@
 
 namespace testing {
   tick func test_func {
-    bossbar::set(a:b, max: 20);
+    bossbar::set(a:b, max:20);
     // asdsay
   }
 }
