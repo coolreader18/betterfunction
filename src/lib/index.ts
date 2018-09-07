@@ -163,8 +163,8 @@ const validateTypes = (
     return userType === funcType;
   }
   throw new Err({
-    type: "library",
-    msg: `Invalid Type for function definition of ${path.join("::")}`
+    type: "plugin",
+    msg: `Invalid type for function definition of ${path.join("::")}`
   });
 };
 

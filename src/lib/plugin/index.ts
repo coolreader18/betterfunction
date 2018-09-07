@@ -96,7 +96,7 @@ const _toStr = (expr: btfn.Expression) => {
       )}`;
     default:
       throw new Err({
-        type: "library",
+        type: "plugin",
         msg: `Expression of type ${expr.type} cannot be converted into a string`
       });
   }

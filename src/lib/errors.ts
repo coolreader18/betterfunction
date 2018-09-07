@@ -1,7 +1,7 @@
 import { PluginFuncType, PluginType } from "./plugin";
 
-interface LibraryErr {
-  type: "library";
+interface PluginErr {
+  type: "plugin";
   msg: string;
 }
 interface BadFuncErr {
@@ -30,7 +30,7 @@ interface NamedArgsErr {
 }
 
 type ErrType =
-  | LibraryErr
+  | PluginErr
   | BadFuncErr
   | ArgsNumberErr
   | ArgsTypeErr
@@ -39,13 +39,13 @@ type ErrType =
 export class Err<T extends ErrType> extends Error {
   private static errTypeToMessage(err: ErrType): string {
     switch (err.type) {
-      case "library":
+      case "plugin":
         return `${
           err.msg
-        }. This is an issue with the library, not the btfn code.`;
+        }. This is an issue with the plugin, not the btfn code.`;
 
       case "badFunc":
-        return `${err.func.join("::")} is not a valid function.`;
+        return `\`${err.func.join("::")}\` is not a valid function.`;
 
       case "argsNumber":
         return `Wrong number of positional arguments for ${err.func.join(
