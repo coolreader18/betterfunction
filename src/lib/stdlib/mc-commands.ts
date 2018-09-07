@@ -8,7 +8,9 @@ import {
   mkString,
   gamemode,
   difficulty,
-  Plugin
+  Plugin,
+  mkNum,
+  mkBool
 } from "../plugin";
 
 const mcCommands: Plugin = {
@@ -175,6 +177,32 @@ const mcCommands: Plugin = {
     posits: p(difficulty),
     named: {},
     transform: ([dif]) => toStr`difficulty ${dif.content}`
+  }),
+  effect: nsp({
+    give: fn({
+      posits: p("selector", "id"),
+      named: { seconds: "num", amplifier: "num", hideParticles: "bool" },
+      transform: (
+        [target, effect],
+        {
+          seconds = mkNum(30),
+          amplifier = mkNum(0),
+          hideParticles = mkBool(false)
+        }
+      ) => toStr`effect give ${target} ${effect} ${seconds} ${amplifier}`
+    }),
+    clear: fn({
+      posits: p("selector"),
+      named: { of: "id" },
+      transform: ([target], { of: effect }) =>
+        toStr`effect clear ${target} ${effect}`
+    })
+  }),
+  enchant: fn({
+    posits: p("selector", "id"),
+    named: { level: "num" },
+    transform: ([target, enchntmnt], { level }) =>
+      toStr`enchant ${target} ${enchntmnt} ${level}`
   })
 };
 

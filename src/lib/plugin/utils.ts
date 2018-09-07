@@ -23,7 +23,13 @@ export const strEnum = <O extends string>(...options: O[]): StringEnum<O> => ({
   options
 });
 export const p = <T extends PluginFuncType[]>(...a: T) => a;
+
 export const mkString = <S extends string>(content: S): btfn.String<S> => ({
   type: "string",
+  content
+});
+export const mkNum = (content: number): btfn.Num => ({ type: "num", content });
+export const mkBool = (content: boolean): btfn.Bool => ({
+  type: "bool",
   content
 });
