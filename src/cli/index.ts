@@ -1,4 +1,4 @@
-import * as chalk from "chalk";
+import chalk from "chalk";
 import * as fs from "fs-extra";
 import * as yargs from "yargs";
 import * as btfn from "../lib/index";
@@ -19,10 +19,11 @@ yargs.usage(
           "where to save the datapack instead dirname(crfunction)/data"
       }),
   ({ file, output }) => {
-    btfn.transform(
-      fs.readFileSync(file, "utf8")
-      //output ? path.resolve(process.cwd(), output) : undefined
-    );
-    console.log(chalk.default.green.bold("Done!\n"));
+    try {
+      btfn.transform(fs.readFileSync(file, "utf8"));
+      console.log(chalk.green.bold.italic`Done!\n`);
+    } catch (err) {
+      console.log(chalk.red.bold(err));
+    }
   }
 ).argv;
