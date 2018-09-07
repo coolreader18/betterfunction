@@ -104,8 +104,8 @@ string -> %string {%
     content: JSON.parse(data[0].value)
   })
 %}
-_ -> %__:? {% nuller %} | _ cmt _
-__ -> %__ {% nuller %} | __ cmt _
+_ -> __:? {% nuller %}
+__ -> %__ {% nuller %} | _ cmt __
 cmt -> %cmt {%
   data => {
     const match = /^\/\/(.*)$/.exec(data[0].value);
