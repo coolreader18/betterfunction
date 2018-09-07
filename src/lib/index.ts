@@ -21,12 +21,28 @@ export { btfn as tokens };
 
 const btfnLib: Plugin = nsp({ ...stdlib });
 
+/**
+ * The nearley grammar for the betterfunction language
+ */
 export const grammar = nearley.Grammar.fromCompiled(rules);
 
-export const process = (file: string, out?: string) => {
+interface GenerateOptions extends TransformOptions {
+  /** The output directory, defaults to `dirname(entry)/data` */
+  out?: string;
+}
+
+/**
+ * Transform an input file and output into a datapack directory.
+ * @param file - The btfn input file to transform and generate output for
+ * @param opts - Options for generateing and transforming
+ */
+export const generate = (
+  file: string,
+  { out, ...transOpts }: GenerateOptions = {}
+) => {
   const { outDir, entry } = getEntryOut(file, out);
 
-  const output = transform(fs.readFileSync(entry, "utf8"));
+  const output = transform(fs.readFileSync(entry, "utf8"), transOpts);
 
   fs.mkdirpSync(outDir);
 
@@ -77,7 +93,17 @@ interface BtfnOutput {
   };
 }
 
-export const transform = (content: string): BtfnOutput => {
+interface TransformOptions {}
+
+/**
+ * Transform betterfunction source into an output format
+ * @param content - Btfn code to transform
+ * @param opts - Options for transforming
+ */
+export const transform = (
+  content: string,
+  {  }: TransformOptions = {}
+): BtfnOutput => {
   const parser = new nearley.Parser(grammar);
   parser.feed(content);
   const parsed: btfn.File = parser.results[0];

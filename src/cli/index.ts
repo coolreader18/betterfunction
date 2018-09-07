@@ -20,7 +20,7 @@ yargs.usage(
       }),
   ({ file, output }) => {
     try {
-      btfn.process(file, output);
+      btfn.generate(file, { out: output });
       console.log(chalk.green.bold.italic`Done!\n`);
     } catch (err) {
       console.log(chalk.red.bold(err));
