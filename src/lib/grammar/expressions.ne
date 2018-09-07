@@ -121,4 +121,11 @@ id -> ident %colon delim[ident {% id %}, %slash] {%
 
 tag -> %hash id {% data => ({ ...data[1], type: "tag" }) %}
 
-expr -> ( functionExpr | selector | nbtVal | cond | pos | id | tag ) {% id2 %}
+cmd -> %slash callParens {%
+  data => ({
+    type: "cmd",
+    call: data[1]
+  })
+%}
+
+expr -> ( functionExpr | selector | nbtVal | cond | pos | id | tag | cmd ) {% id2 %}

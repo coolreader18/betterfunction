@@ -34,7 +34,7 @@ export default moo.compile({
   eq: "=",
   not: "!",
   range: "..",
-  cond: "$",
+  cond: "?",
   rel: "~",
   ray: "^",
   slash: "/",

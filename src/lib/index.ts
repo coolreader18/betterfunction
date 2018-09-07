@@ -102,7 +102,7 @@ const funcTransCtx = (ctx: TransformContext): FuncTransformContext => ({
         : content
     ),
   transformCall: callInput => {
-    let call: btfn.CallStatement;
+    let call: btfn.Call;
     if (typeof callInput === "string") call = parseCall(callInput);
     else if ("type" in callInput) call = callInput;
     else {
@@ -112,7 +112,7 @@ const funcTransCtx = (ctx: TransformContext): FuncTransformContext => ({
   }
 });
 
-const validateCall = ({ params, func }: btfn.CallStatement) => {
+const validateCall = ({ params, func }: btfn.Call) => {
   const funcDef = getFuncDef(func);
   if (!funcDef) return false;
   if (params.posits.length !== funcDef.posits.length) return false;
@@ -185,7 +185,7 @@ const callGrammar = nearley.Grammar.fromCompiled({
   ...rules,
   ParserStart: "callStatement"
 });
-const parseCall = (content: string): btfn.CallStatement => {
+const parseCall = (content: string): btfn.Call => {
   content += ";";
   const parser = new nearley.Parser(callGrammar);
   parser.feed(content);

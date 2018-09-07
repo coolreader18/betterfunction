@@ -3,11 +3,7 @@ import * as path from "path";
 import * as fs from "fs-extra";
 import * as btfn from "./token-defs";
 
-export const simpleCall = ({
-  func,
-  named,
-  posits
-}: SimpleCall): btfn.CallStatement => ({
+export const simpleCall = ({ func, named, posits }: SimpleCall): btfn.Call => ({
   type: "callStatement",
   func: {
     type: "funcIdent",

@@ -26,9 +26,9 @@ export interface FunctionStatement {
   statements: StatementFunction[];
   mctag: "tick" | "load" | null;
 }
-export type StatementFunction = CallStatement;
+export type StatementFunction = Call;
 
-export interface CallStatement {
+export interface Call {
   type: "callStatement";
   func: FuncIdent;
   params: CallParams;
@@ -131,4 +131,8 @@ export interface Tag {
   type: "tag";
   nsp: string;
   path: string[];
+}
+export interface Cmd {
+  type: "cmd";
+  call: Call;
 }

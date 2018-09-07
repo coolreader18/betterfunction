@@ -62,9 +62,8 @@ functionStatement ->  ( ( %kw_tick | %kw_load ) __ ):? %kw_func __ ident _ funct
 %}
 
 statementFunction -> callStatement
-callStatement -> funcIdent _ ( 
-  %lp callParams %rp {% data => [data[1], true] %} | callParams {% data => [data[0], false] %} 
-) term {%
+
+callMac[params] -> funcIdent _ $params {%
   data => ({
     type: "callStatement",
     func: data[0],
@@ -72,6 +71,13 @@ callStatement -> funcIdent _ (
     parens: data[2][1]
   })
 %}
+callStatement -> call term {% id %}
+call -> ( callParens | callNoParens ) {% id2 %}
+callParens -> callMac[paramsParens {% id %}] {% id %}
+paramsParens -> %lp callParams %rp {% data => [data[1], true] %}
+callNoParens -> callMac[paramsNoParens {% id %}] {% id %}
+paramsNoParens -> callParams {% data => [data[0], false] %}
+ 
 namedParam -> ident _ %colon _ expr {% data => [data[0], data[4]] %}
 callParams -> _ (
   delim[expr {% id %}, %comma] ( _ %comma _ delim[namedParam {% id %}, %comma] {% nth(3) %} ):? {%

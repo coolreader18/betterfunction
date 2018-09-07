@@ -21,7 +21,7 @@ export interface StringEnum<O extends string = string> {
 }
 export interface FuncTransformContext {
   genFunc: (content: string | btfn.Function) => string;
-  transformCall: (call: btfn.CallStatement | string | SimpleCall) => string;
+  transformCall: (call: btfn.Call | string | SimpleCall) => string;
 }
 export interface SimpleCall {
   func: string;
