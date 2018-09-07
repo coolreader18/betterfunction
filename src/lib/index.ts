@@ -15,6 +15,9 @@ import {
 import stdlib from "./stdlib";
 import { simpleCall, getEntryOut, TransformContext } from "./utils";
 import { Err, ErrType } from "./errors";
+import * as btfn from "./token-defs";
+
+export { btfn as tokens };
 
 const btfnLib: Plugin = nsp({ ...stdlib });
 
@@ -28,13 +31,13 @@ export const load = (file: string, out?: string) => {
   const generated = {};
 
   parser.feed(fs.readFileSync(entry, "utf8"));
-  const parsed: betterfunction.File = parser.results[0];
+  const parsed: btfn.File = parser.results[0];
 };
 
 export const transform = (content: string) => {
   const parser = new nearley.Parser(grammar);
   parser.feed(content);
-  const parsed: betterfunction.File = parser.results[0];
+  const parsed: btfn.File = parser.results[0];
   const ctx = new TransformContext();
   for (const stmnt of parsed.statements) {
     switch (stmnt.type) {
@@ -52,7 +55,7 @@ interface NamespaceChildren {
   [k: string]: string | NamespaceChildren;
 }
 const transformNamespace = (
-  nsp: betterfunction.NamespaceStatement | betterfunction.FolderStatement,
+  nsp: btfn.NamespaceStatement | btfn.FolderStatement,
   ctx: TransformContext
 ) => {
   const children: NamespaceChildren = {};
@@ -72,7 +75,7 @@ const transformNamespace = (
 };
 
 const transformFunction = (
-  func: betterfunction.FunctionStatement,
+  func: btfn.FunctionStatement,
   ctx: TransformContext
 ): string => {
   if (func.mctag) ctx.mctags[func.mctag].push([...ctx.stack, func.name]);
@@ -99,7 +102,7 @@ const funcTransCtx = (ctx: TransformContext): FuncTransformContext => ({
         : content
     ),
   transformCall: callInput => {
-    let call: betterfunction.CallStatement;
+    let call: btfn.CallStatement;
     if (typeof callInput === "string") call = parseCall(callInput);
     else if ("type" in callInput) call = callInput;
     else {
@@ -109,7 +112,7 @@ const funcTransCtx = (ctx: TransformContext): FuncTransformContext => ({
   }
 });
 
-const validateCall = ({ params, func }: betterfunction.CallStatement) => {
+const validateCall = ({ params, func }: btfn.CallStatement) => {
   const funcDef = getFuncDef(func);
   if (!funcDef) return false;
   if (params.posits.length !== funcDef.posits.length) return false;
@@ -126,7 +129,7 @@ const validateCall = ({ params, func }: betterfunction.CallStatement) => {
   return true;
 };
 const validateTypes = (
-  expr: betterfunction.Expression,
+  expr: btfn.Expression,
   funcType: PluginFuncType,
   path: string[]
 ): boolean => {
@@ -150,12 +153,12 @@ const validateTypes = (
 };
 
 const transformCall = (
-  call: betterfunction.CallStatement,
+  call: btfn.CallStatement,
   ctx: FuncTransformContext
 ): string =>
   getFuncDef(call.func)!.transform(call.params.posits, call.params.named, ctx);
 
-const getFuncDef = ({ path }: betterfunction.FuncIdent): PluginFunc | null => {
+const getFuncDef = ({ path }: btfn.FuncIdent): PluginFunc | null => {
   let cur: PluginChild = btfnLib;
   const len = path.length;
   for (const [child, i] of path.map((cur, i) => [cur, i])) {
@@ -182,7 +185,7 @@ const callGrammar = nearley.Grammar.fromCompiled({
   ...rules,
   ParserStart: "callStatement"
 });
-const parseCall = (content: string): betterfunction.CallStatement => {
+const parseCall = (content: string): btfn.CallStatement => {
   content += ";";
   const parser = new nearley.Parser(callGrammar);
   parser.feed(content);

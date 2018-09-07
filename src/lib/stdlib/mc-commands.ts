@@ -7,10 +7,11 @@ import {
   toStr,
   mkString,
   gamemode,
-  difficulty
+  difficulty,
+  Plugin
 } from "../plugin";
 
-const mcCommands = nsp({
+const mcCommands: Plugin = {
   advancement: nsp({
     grant: fn({
       posits: p(
@@ -175,6 +176,6 @@ const mcCommands = nsp({
     named: {},
     transform: ([dif]) => toStr`difficulty ${dif.content}`
   })
-});
+};
 
 export default mcCommands;

@@ -1,34 +1,32 @@
 import { Err, ErrType } from "../errors";
 import { btfnNamespace } from "./btfn-namespace";
+import * as btfn from "../token-defs";
 
-type FindFromType<T extends PluginType> = Extract<
-  betterfunction.Expression,
-  { type: T }
->;
+type FindFromType<T extends PluginType> = Extract<btfn.Expression, { type: T }>;
 type TupleValues<T extends any[]> = T extends Array<infer U> ? U : never;
 
 export { btfnNamespace };
 export interface Plugin {
-  [btfnNamespace]: true;
   [k: string]: PluginChild;
 }
-export type PluginChild = PluginFunc | Plugin | string;
-export type PluginType = betterfunction.Expression["type"];
+export interface Namespace extends Plugin {
+  [btfnNamespace]: true;
+}
+export type PluginChild = PluginFunc | Namespace | string;
+export type PluginType = btfn.Expression["type"];
 export type PluginFuncType = PluginType | PluginType[] | StringEnum;
 export interface StringEnum<O extends string = string> {
   type: "string";
   options: O[];
 }
 export interface FuncTransformContext {
-  genFunc: (content: string | betterfunction.Function) => string;
-  transformCall: (
-    call: betterfunction.CallStatement | string | SimpleCall
-  ) => string;
+  genFunc: (content: string | btfn.Function) => string;
+  transformCall: (call: btfn.CallStatement | string | SimpleCall) => string;
 }
 export interface SimpleCall {
   func: string;
-  posits: betterfunction.Expression[];
-  named: { [k: string]: betterfunction.Expression };
+  posits: btfn.Expression[];
+  named: { [k: string]: btfn.Expression };
 }
 export interface PluginFunc<
   P extends PluginFuncType[] = PluginFuncType[],
@@ -45,7 +43,7 @@ export interface PluginFunc<
 
 type MapTypes<T extends { [k: string]: PluginFuncType } | PluginFuncType[]> = {
   [k in keyof T]: T[k] extends StringEnum<infer O>
-    ? betterfunction.String<O>
+    ? btfn.String<O>
     : FindFromType<
         Extract<
           T[k] extends PluginType[] ? TupleValues<T[k]> : T[k],
@@ -54,8 +52,8 @@ type MapTypes<T extends { [k: string]: PluginFuncType } | PluginFuncType[]> = {
       >
 };
 export const toStr = (
-  strs: TemplateStringsArray | betterfunction.Expression,
-  ...exprs: Array<betterfunction.Expression | string | undefined | boolean>
+  strs: TemplateStringsArray | btfn.Expression,
+  ...exprs: Array<btfn.Expression | string | undefined | boolean>
 ) => {
   if ("raw" in strs) {
     return strs.reduce((prev, cur, i) => {
@@ -71,14 +69,14 @@ export const toStr = (
   return _toStr(strs);
 };
 export const funcToCmd = (
-  func: betterfunction.Function,
+  func: btfn.Function,
   ctx: FuncTransformContext
 ): string => toStr`function ${ctx.genFunc(func.statements.join("\n"))}`;
 export const tagId: ["tag", "id"] = ["tag", "id"];
 export * from "./mc-data";
 export * from "./utils";
 
-const _toStr = (expr: betterfunction.Expression) => {
+const _toStr = (expr: btfn.Expression) => {
   switch (expr.type) {
     case "bool":
     case "num":
@@ -101,7 +99,7 @@ const _toStr = (expr: betterfunction.Expression) => {
   }
 };
 
-const singleSelStr = (val: betterfunction.ValSelector): string => {
+const singleSelStr = (val: btfn.ValSelector): string => {
   switch (val.type) {
     case "optional":
       return `${val.not ? "!" : ""}${singleSelStr(val.value)}`;
