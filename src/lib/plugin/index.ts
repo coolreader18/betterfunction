@@ -1,4 +1,4 @@
-import { Err, ErrType } from "../errors";
+import { Err } from "../errors";
 import { btfnNamespace } from "./btfn-namespace";
 import * as btfn from "../token-defs";
 
@@ -14,7 +14,10 @@ export interface Namespace extends Plugin {
 }
 export type PluginChild = PluginFunc | Namespace | string;
 export type PluginType = btfn.Expression["type"];
-export type PluginFuncType = PluginType | PluginType[] | StringEnum;
+export type PluginFuncType =
+  | PluginType
+  | StringEnum
+  | Array<PluginType | StringEnum>;
 export interface StringEnum<O extends string = string> {
   type: "string";
   options: O[];
@@ -92,10 +95,10 @@ const _toStr = (expr: btfn.Expression) => {
         "/"
       )}`;
     default:
-      throw new Err(
-        ErrType.LIBRARY,
-        `Expression of type ${expr.type} cannot be converted into a string`
-      );
+      throw new Err({
+        type: "library",
+        msg: `Expression of type ${expr.type} cannot be converted into a string`
+      });
   }
 };
 

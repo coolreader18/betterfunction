@@ -14,7 +14,7 @@ import {
 } from "./plugin";
 import stdlib from "./stdlib";
 import { simpleCall, getEntryOut, TransformContext } from "./utils";
-import { Err, ErrType } from "./errors";
+import { Err } from "./errors";
 import * as btfn from "./token-defs";
 
 export { btfn as tokens };
@@ -81,8 +81,7 @@ const transformFunction = (
   if (func.mctag) ctx.mctags[func.mctag].push([...ctx.stack, func.name]);
   const cmds: string[] = [];
   for (const stmnt of func.statements) {
-    const valid = validateCall(stmnt);
-    if (!valid) throw new Error("oof");
+    validateCall(stmnt);
     cmds.push(transformCall(stmnt, funcTransCtx(ctx)));
   }
   return cmds.join("\n");
@@ -114,19 +113,36 @@ const funcTransCtx = (ctx: TransformContext): FuncTransformContext => ({
 
 const validateCall = ({ params, func }: btfn.Call) => {
   const funcDef = getFuncDef(func);
-  if (!funcDef) return false;
-  if (params.posits.length !== funcDef.posits.length) return false;
-  const positsValid = params.posits.every((posit, i) =>
-    validateTypes(posit, funcDef.posits[i], func.path)
-  );
-  if (!positsValid) return false;
-  const namedValid = Object.entries(params.named).every(
-    ([key, posit]) =>
+  if (params.posits.length !== funcDef.posits.length)
+    throw new Err({
+      type: "argsNumber",
+      func: func.path,
+      expect: funcDef.posits.length,
+      actual: params.posits.length
+    });
+  params.posits.forEach((posit, i) => {
+    if (!validateTypes(posit, funcDef.posits[i], func.path))
+      throw new Err({
+        type: "argsType",
+        func: func.path,
+        ind: i,
+        expect: funcDef.posits[i],
+        actual: posit.type
+      });
+  });
+  Object.entries(params.named).forEach(([key, posit]) => {
+    const passes =
       key in funcDef.named &&
-      validateTypes(posit, funcDef.named[key], func.path)
-  );
-  if (!namedValid) return false;
-  return true;
+      validateTypes(posit, funcDef.named[key], func.path);
+    if (!passes)
+      throw new Err({
+        type: "namedArgs",
+        func: func.path,
+        key,
+        expect: funcDef.named[key],
+        actual: posit.type
+      });
+  });
 };
 const validateTypes = (
   expr: btfn.Expression,
@@ -146,39 +162,40 @@ const validateTypes = (
   } else if (typeof funcType === "string") {
     return userType === funcType;
   }
-  throw new Err(
-    ErrType.LIBRARY,
-    `Invalid Type for function definition of ${path.join("::")}`
-  );
+  throw new Err({
+    type: "library",
+    msg: `Invalid Type for function definition of ${path.join("::")}`
+  });
 };
 
-const transformCall = (
-  call: btfn.CallStatement,
-  ctx: FuncTransformContext
-): string =>
+const transformCall = (call: btfn.Call, ctx: FuncTransformContext): string =>
   getFuncDef(call.func)!.transform(call.params.posits, call.params.named, ctx);
 
-const getFuncDef = ({ path }: btfn.FuncIdent): PluginFunc | null => {
-  let cur: PluginChild = btfnLib;
+const getFuncDef = ({ path }: btfn.FuncIdent): PluginFunc => {
   const len = path.length;
-  for (const [child, i] of path.map((cur, i) => [cur, i])) {
-    cur = cur[child];
-    if (
-      !cur ||
-      (cur[btfnNamespace] && i === len - 1) ||
-      (!cur[btfnNamespace] && i < len - 1)
-    ) {
-      return null;
-    }
-  }
 
-  return typeof cur === "string"
+  const funcDef: PluginFunc | string = path.reduce(
+    (prev: PluginChild | Plugin, cur, i) => {
+      const child = prev[cur];
+      if (
+        !child ||
+        (child[btfnNamespace] && i === len - 1) ||
+        (!child[btfnNamespace] && i < len - 1)
+      ) {
+        throw new Err({ type: "badFunc", func: path });
+      }
+      return child;
+    },
+    btfnLib
+  );
+
+  return typeof funcDef === "string"
     ? {
         posits: [],
         named: {},
-        transform: () => cur as string
+        transform: () => funcDef
       }
-    : (cur as PluginFunc);
+    : funcDef;
 };
 
 const callGrammar = nearley.Grammar.fromCompiled({
