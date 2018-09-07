@@ -20,7 +20,8 @@ yargs.usage(
       }),
   ({ file, output }) => {
     try {
-      btfn.transform(fs.readFileSync(file, "utf8"));
+      const out = btfn.transform(fs.readFileSync(file, "utf8"));
+      console.log(JSON.stringify(out, null, 2));
       console.log(chalk.green.bold.italic`Done!\n`);
     } catch (err) {
       console.log(chalk.red.bold(err));

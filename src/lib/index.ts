@@ -23,7 +23,7 @@ const btfnLib: Plugin = nsp({ ...stdlib });
 
 export const grammar = nearley.Grammar.fromCompiled(rules);
 
-export const load = (file: string, out?: string) => {
+export const process = (file: string, out?: string) => {
   const parser = new nearley.Parser(grammar);
 
   const { outDir, entry, dir } = getEntryOut(file, out);
@@ -34,57 +34,103 @@ export const load = (file: string, out?: string) => {
   const parsed: btfn.File = parser.results[0];
 };
 
-export const transform = (content: string) => {
+interface BtfnOutput {
+  namespaces: {
+    [k: string]: BtfnOutputNamespace;
+  };
+  tags: {
+    tick: string[][];
+    load: string[][];
+  };
+}
+
+export const transform = (content: string): BtfnOutput => {
   const parser = new nearley.Parser(grammar);
   parser.feed(content);
   const parsed: btfn.File = parser.results[0];
   const ctx = new TransformContext();
+  const out: BtfnOutput = { namespaces: {}, tags: ctx.mctags };
   for (const stmnt of parsed.statements) {
     switch (stmnt.type) {
       case "namespaceStatement":
         ctx.stack.push(stmnt.name);
         const nsp = transformNamespace(stmnt, ctx);
         ctx.stack.pop();
-        console.log(nsp.function);
+        out.namespaces[stmnt.name] = nsp;
         break;
     }
   }
+  return out;
 };
 
-interface NamespaceChildren {
-  [k: string]: string | NamespaceChildren;
+interface BtfnOutputNamespace {
+  type: "namespace";
+  generated: string[];
+  children: BtfnOutputFolder["children"];
 }
 const transformNamespace = (
   nsp: btfn.NamespaceStatement | btfn.FolderStatement,
   ctx: TransformContext
 ) => {
-  const children: NamespaceChildren = {};
-  for (const stmnt of nsp.statements) {
+  const out: BtfnOutputNamespace = {
+    type: "namespace",
+    generated: [],
+    children: {}
+  };
+  ctx.gen = out.generated;
+  out.children = transformFolder(nsp, ctx).children;
+  return out;
+};
+
+interface BtfnOutputFolder {
+  type: "folder";
+  children: {
+    [k: string]: BtfnOutputFunction | BtfnOutputFolder;
+  };
+}
+const transformFolder = (
+  folder: btfn.FolderStatement | btfn.NamespaceStatement,
+  ctx: TransformContext
+): BtfnOutputFolder => {
+  const out: BtfnOutputFolder = {
+    type: "folder",
+    children: {}
+  };
+  for (const stmnt of folder.statements) {
     switch (stmnt.type) {
       case "functionStatement":
-        children[stmnt.name] = transformFunction(stmnt, ctx);
+        out.children[stmnt.name] = transformFunction(stmnt, ctx);
         break;
       case "folderStatement":
         ctx.stack.push(stmnt.type);
-        children[stmnt.name] = transformNamespace(stmnt, ctx);
+        out.children[stmnt.name] = transformFolder(stmnt, ctx);
         ctx.stack.pop();
         break;
     }
   }
-  return children;
+  return out;
 };
 
+interface BtfnOutputFunction {
+  type: "function";
+  outputText: string;
+  tag: "tick" | "load" | null;
+}
 const transformFunction = (
   func: btfn.FunctionStatement,
   ctx: TransformContext
-): string => {
+): BtfnOutputFunction => {
   if (func.mctag) ctx.mctags[func.mctag].push([...ctx.stack, func.name]);
   const cmds: string[] = [];
   for (const stmnt of func.statements) {
     validateCall(stmnt);
     cmds.push(transformCall(stmnt, funcTransCtx(ctx)));
   }
-  return cmds.join("\n");
+  return {
+    type: "function",
+    outputText: cmds.join("\n"),
+    tag: func.mctag
+  };
 };
 const funcTransCtx = (ctx: TransformContext): FuncTransformContext => ({
   genFunc: content =>

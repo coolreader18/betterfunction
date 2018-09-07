@@ -52,12 +52,12 @@ folderStatement -> %kw_folder __ ident _ block[statementFolderOrNsp {% id %}] {%
 	})
 %}
 functionBlock -> block[statementFunction {% id %}] {% id %}
-functionStatement ->  ( ( %kw_tick | %kw_load ) __ ):? %kw_func __ ident _ functionBlock {%
+functionStatement ->  ( ( %kw_tick | %kw_load ) __ {% id2 %} ):? %kw_func __ ident _ functionBlock {%
 	data => ({
     type: "functionStatement",
     name: data[3],
     statements: data[5],
-    mctag: data[0] && data[0][0].value
+    mctag: data[0] ? data[0].value : null
   })
 %}
 

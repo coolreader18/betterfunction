@@ -1,6 +1,6 @@
 
 namespace testing {
   func test_func {
-    execute;
+    bossbar::set(a:b, max: 20);
   }
 }
