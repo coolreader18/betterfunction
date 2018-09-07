@@ -1,7 +1,8 @@
 import * as fs from "fs-extra";
+
 import * as nearley from "nearley";
-import * as path from "path";
 import * as rules from "./grammar/index.ne";
+import * as path from "path";
 import {
   btfnNamespace,
   Plugin,
@@ -9,8 +10,7 @@ import {
   PluginFunc,
   nsp,
   FuncTransformContext,
-  PluginFuncType,
-  toStr
+  PluginFuncType
 } from "./plugin";
 import stdlib from "./stdlib";
 import { simpleCall, getEntryOut, TransformContext } from "./utils";
@@ -24,14 +24,47 @@ const btfnLib: Plugin = nsp({ ...stdlib });
 export const grammar = nearley.Grammar.fromCompiled(rules);
 
 export const process = (file: string, out?: string) => {
-  const parser = new nearley.Parser(grammar);
+  const { outDir, entry } = getEntryOut(file, out);
 
-  const { outDir, entry, dir } = getEntryOut(file, out);
-  const mctags = { tick: [], load: [] };
-  const generated = {};
+  const output = transform(fs.readFileSync(entry, "utf8"));
 
-  parser.feed(fs.readFileSync(entry, "utf8"));
-  const parsed: btfn.File = parser.results[0];
+  fs.mkdirpSync(outDir);
+
+  for (const [tag, val] of Object.entries(output.tags)) {
+    if (!val.length) continue;
+    const tagsPath = path.join(outDir, "minecraft/tags/functions");
+    fs.mkdirpSync(tagsPath);
+    fs.writeJSONSync(path.join(tagsPath, `${tag}.json`), {
+      values: val.map(([nsp, ...funcPath]) => `${nsp}:${funcPath.join("/")}`)
+    });
+  }
+
+  for (const [name, nsp] of Object.entries(output.namespaces)) {
+    const funcsDir = path.join(outDir, name, "functions");
+
+    writeChildren(nsp.children, funcsDir);
+
+    const genDir = path.join(funcsDir, "btfngen");
+    nsp.generated.forEach((func, i) => {
+      fs.writeFileSync(path.join(genDir, `${func}${i + 1}.mcfunction`), func);
+    });
+  }
+};
+const writeChildren = (children: BtfnOutputFolder["children"], dir: string) => {
+  fs.mkdirpSync(dir);
+  for (const [name, child] of Object.entries(children)) {
+    switch (child.type) {
+      case "folder":
+        writeChildren(child.children, path.join(dir, name));
+        break;
+      case "function":
+        fs.writeFileSync(
+          path.join(dir, `${name}.mcfunction`),
+          child.outputText
+        );
+        break;
+    }
+  }
 };
 
 interface BtfnOutput {

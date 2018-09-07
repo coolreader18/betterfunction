@@ -22,7 +22,15 @@ export const feedStream = (
   stream: NodeJS.ReadableStream
 ) => stream.on("data", (data: string) => parser.feed(data));
 
-export const getEntryOut = (file: string, outDir?: string) => {
+interface Entry {
+  /** The directory containing the entry file */
+  dir: string;
+  /** The entry file */
+  entry: string;
+  /** The directory to output to */
+  outDir: string;
+}
+export const getEntryOut = (file: string, outDir?: string): Entry => {
   file = path.resolve(file);
   let config: {
     entry: string;
