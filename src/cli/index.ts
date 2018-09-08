@@ -1,5 +1,4 @@
 import chalk from "chalk";
-import * as fs from "fs-extra";
 import * as yargs from "yargs";
 import * as btfn from "../lib/index";
 
@@ -20,7 +19,7 @@ yargs.usage(
       }),
   ({ file, output }) => {
     try {
-      btfn.generate(file, { out: output });
+      btfn.transformFile(file).write({ out: output });
       console.log(chalk.green.bold.italic`Done!\n`);
     } catch (err) {
       console.log(chalk.red.bold(err));

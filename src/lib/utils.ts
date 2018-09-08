@@ -61,13 +61,3 @@ export const getEntryOut = (file: string, outDir?: string): Entry => {
 };
 
 export const ext = ".btfunction";
-
-export class TransformContext {
-  mctags: { tick: string[][]; load: string[][] } = { tick: [], load: [] };
-  gen: string[] = [];
-  stack: string[] = [];
-  genFunc(content: string) {
-    const id = this.gen.push(content);
-    return `${this.stack[0]}:btfngen/func${id}`;
-  }
-}
