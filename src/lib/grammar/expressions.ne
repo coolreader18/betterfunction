@@ -107,9 +107,21 @@ pos -> coord __ coord __ coord {%
   })
 %}
 coord -> ( %rel:? num | %rel ) {%
-  data => ({ type: "coord", relative: !!data[0], ray: false, coord: data[1] ? data[1].content : 0 })
+  data => ({
+    type: "coord",
+    relative: !!data[0],
+    ray: false,
+    coord: data[1] ? data[1].content : 0
+  })
 %}
-raycoord -> %ray num {% data => ({ type: "coord", relative: false, ray: true, coord: data[1].content }) %}
+raycoord -> %ray num {%
+  data => ({
+    type: "coord",
+    relative: false,
+    ray: true,
+    coord: data[1].content
+  })
+%}
 
 id -> ident %colon delim[ident {% id %}, %slash] {%
   data => ({

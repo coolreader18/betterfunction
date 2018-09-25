@@ -19,7 +19,9 @@ yargs.usage(
       }),
   ({ file, output }) => {
     try {
-      btfn.transformFile(file).write({ out: output });
+      const compilation =
+        file === "-" ? btfn.transform(process.stdin) : btfn.transformFile(file);
+      compilation.write({ out: output });
       console.log(chalk.green.bold.italic`Done!\n`);
     } catch (err) {
       console.log(chalk.red.bold(err));

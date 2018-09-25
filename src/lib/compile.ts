@@ -4,7 +4,7 @@ import * as rules from "./grammar/index.ne";
 import { FuncTransformContext, Plugin } from "./plugin";
 import stdlib from "./stdlib";
 import * as btfn from "./token-defs";
-import { getEntryOut, simpleCall } from "./utils";
+import { getEntryOut, simpleCall, feedStream } from "./utils";
 import {
   transformNamespace,
   transformCall,
@@ -175,11 +175,15 @@ interface TransformOptions {
  * @param opts - Options for transforming
  */
 export const transform = (
-  content: string,
+  content: string | NodeJS.ReadableStream,
   { entryFilename }: TransformOptions = {}
 ): BtfnCompilation => {
   const parser = new nearley.Parser(grammar);
-  parser.feed(content);
+  if (typeof content === "string") {
+    parser.feed(content);
+  } else if (content.readable) {
+    feedStream(parser, content);
+  }
   // IO boundary, the line below is assuming that everything coming from the
   // parser and postprocessors is correct and aligns the definitions in token-defs
   const parsed: btfn.File = parser.results[0];
@@ -205,7 +209,7 @@ export const transformFile = (
   filename: string,
   { fs = require("fs-extra"), ...transOpts }: TransformFileOptions = {}
 ) =>
-  transform(fs.readFileSync(filename, "utf8"), {
+  transform(fs.createReadStream(filename, "utf8"), {
     ...transOpts,
     entryFilename: filename
   });
